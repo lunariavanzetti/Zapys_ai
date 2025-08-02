@@ -3,6 +3,9 @@
  * Integrates with Cursor background agents for AI-powered features
  */
 
+import { analyticsService } from './analyticsService'
+import { AnalyticsRequest, AnalyticsResponse } from './analyticsTypes'
+
 interface ProposalGenerationRequest {
   projectData: {
     title: string
@@ -100,39 +103,89 @@ class AIService {
    * Process analytics and generate insights
    * This will be handled by the agent-analytics-engine Cursor agent
    */
-  async processAnalytics(data: any): Promise<any> {
+  async processAnalytics(request: AnalyticsRequest): Promise<AnalyticsResponse> {
     try {
-      // In production, this would call the Cursor agent
-      return this.mockAnalyticsProcessing(data)
+      // Use the comprehensive analytics service
+      return await analyticsService.processAnalytics(request)
     } catch (error) {
       console.error('Error processing analytics:', error)
-      throw new Error('Failed to process analytics')
+      return {
+        success: false,
+        analytics: {},
+        error: error instanceof Error ? error.message : 'Failed to process analytics'
+      }
     }
   }
 
   /**
    * Optimize proposal content based on analytics
    */
-  async optimizeProposal(_proposalId: string, analyticsData: any): Promise<any> {
+  async optimizeProposal(proposalId: string, analyticsData?: any): Promise<AnalyticsResponse> {
     try {
-      await this.processAnalytics(analyticsData)
-      // Use insights to suggest improvements
-      return {
-        success: true,
-        suggestions: [
-          {
-            type: 'content',
-            priority: 'high',
-            title: 'Strengthen your value proposition',
-            description: 'Based on scroll patterns, clients spend less time on your value section.',
-            actionable: true
-          }
-        ]
+      // Create analytics request for optimization
+      const request: AnalyticsRequest = {
+        type: 'optimization',
+        data: {
+          proposalId,
+          ...analyticsData
+        }
       }
+      
+      // Use the analytics service to generate optimization recommendations
+      return await this.processAnalytics(request)
     } catch (error) {
       console.error('Error optimizing proposal:', error)
-      throw new Error('Failed to optimize proposal')
+      return {
+        success: false,
+        analytics: {},
+        error: error instanceof Error ? error.message : 'Failed to optimize proposal'
+      }
     }
+  }
+
+  /**
+   * Get analytics summary for proposals
+   */
+  async getAnalyticsSummary(filters?: any): Promise<AnalyticsResponse> {
+    const request: AnalyticsRequest = {
+      type: 'summary',
+      data: {
+        filters,
+        timeframe: filters?.timeframe
+      }
+    }
+    
+    return await this.processAnalytics(request)
+  }
+
+  /**
+   * Generate insights from analytics data
+   */
+  async generateInsights(proposalId?: string, timeframe?: any): Promise<AnalyticsResponse> {
+    const request: AnalyticsRequest = {
+      type: 'insight',
+      data: {
+        proposalId,
+        timeframe
+      }
+    }
+    
+    return await this.processAnalytics(request)
+  }
+
+  /**
+   * Process events and generate analytics
+   */
+  async processEvents(events: any[], proposalId?: string): Promise<AnalyticsResponse> {
+    const request: AnalyticsRequest = {
+      type: 'event',
+      data: {
+        events,
+        proposalId
+      }
+    }
+    
+    return await this.processAnalytics(request)
   }
 
   // Mock implementations for development
@@ -199,43 +252,9 @@ class AIService {
     }
   }
 
-  private async mockAnalyticsProcessing(_data: any): Promise<any> {
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    return {
-      success: true,
-      analytics: {
-        summary: {
-          totalViews: 127,
-          uniqueVisitors: 89,
-          avgTimeOnPage: 245,
-          avgScrollDepth: 73.5,
-          conversionRate: 23.5
-        },
-        insights: [
-          {
-            type: 'positive',
-            category: 'engagement',
-            title: 'High engagement rate',
-            description: 'Your proposals are getting excellent engagement with 73% average scroll depth',
-            impact: 'high',
-            actionable: false
-          }
-        ],
-        recommendations: [
-          {
-            priority: 'medium',
-            category: 'content',
-            title: 'Optimize pricing section',
-            description: 'Consider moving pricing information higher in the proposal',
-            expectedImpact: '15% increase in conversion rate',
-            implementation: 'Restructure proposal template'
-          }
-        ]
-      }
-    }
-  }
+
 }
 
 export const aiService = new AIService()
 export type { ProposalGenerationRequest, ProposalGenerationResponse }
+export type { AnalyticsRequest, AnalyticsResponse } from './analyticsTypes'

@@ -3,6 +3,8 @@
  * Integrates with Cursor background agents for AI-powered features
  */
 
+import { ParseRequest, ParseResponse } from '../types/parser'
+
 interface ProposalGenerationRequest {
   projectData: {
     title: string
@@ -84,15 +86,26 @@ class AIService {
 
   /**
    * Parse data from external sources (Notion, CRM, etc.)
-   * This will be handled by the agent-notion-parser Cursor agent
+   * Uses the NotionCRMParser service
    */
-  async parseExternalData(source: string, data: any): Promise<any> {
+  async parseExternalData(request: ParseRequest): Promise<ParseResponse> {
     try {
-      // In production, this would call the Cursor agent
-      return this.mockDataParsing(source, data)
+      const { notionCRMParser } = await import('./notionCRMParser')
+      return await notionCRMParser.parse(request)
     } catch (error) {
       console.error('Error parsing external data:', error)
-      throw new Error('Failed to parse external data')
+      return {
+        success: false,
+        projects: [],
+        metadata: {
+          source: request.source,
+          parsedAt: new Date().toISOString(),
+          itemCount: 0,
+          language: request.options?.language || 'en',
+          confidence: 0
+        },
+        errors: [error instanceof Error ? error.message : 'Failed to parse external data']
+      }
     }
   }
 
@@ -176,28 +189,29 @@ class AIService {
     }
   }
 
-  private async mockDataParsing(source: string, _data: any): Promise<any> {
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    return {
-      success: true,
-      projects: [{
-        title: 'Sample Project from ' + source,
-        clientName: 'Sample Client',
-        description: 'Sample project description',
-        deliverables: ['Deliverable 1', 'Deliverable 2'],
-        estimatedBudget: 5000,
-        timeline: 30
-      }],
-      metadata: {
-        source,
-        parsedAt: new Date().toISOString(),
-        itemCount: 1,
-        language: 'en',
-        confidence: 0.85
-      }
-    }
-  }
+  // Legacy mock method - kept for compatibility
+  // private async mockDataParsing(source: string, _data: any): Promise<any> {
+  //   await new Promise(resolve => setTimeout(resolve, 1000))
+  //   
+  //   return {
+  //     success: true,
+  //     projects: [{
+  //       title: 'Sample Project from ' + source,
+  //       clientName: 'Sample Client',
+  //       description: 'Sample project description',
+  //       deliverables: ['Deliverable 1', 'Deliverable 2'],
+  //       estimatedBudget: 5000,
+  //       timeline: 30
+  //     }],
+  //     metadata: {
+  //       source,
+  //       parsedAt: new Date().toISOString(),
+  //       itemCount: 1,
+  //       language: 'en',
+  //       confidence: 0.85
+  //     }
+  //   }
+  // }
 
   private async mockAnalyticsProcessing(_data: any): Promise<any> {
     await new Promise(resolve => setTimeout(resolve, 500))

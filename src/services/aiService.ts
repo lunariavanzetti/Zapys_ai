@@ -1,241 +1,293 @@
-/**
- * AI Service for Zapys AI
- * Integrates with Cursor background agents for AI-powered features
- */
+// AI Service Integration
+// Connects AI Proposal Generator with the existing application
 
-interface ProposalGenerationRequest {
-  projectData: {
-    title: string
-    clientName: string
-    clientEmail?: string
-    clientCompany?: string
-    description: string
-    deliverables?: string[]
-    estimatedBudget?: number
-    timeline?: number
-    industry?: string
-  }
-  userPreferences: {
-    tone: 'professional' | 'friendly' | 'premium' | 'casual'
-    language: 'en' | 'uk' | 'ru' | 'pl'
-    brandVoice?: string
-    customInstructions?: string
-  }
-  templateType?: 'web_design' | 'development' | 'branding' | 'marketing' | 'custom'
-}
+import { 
+  aiProposalGenerator, 
+  ProposalGenerationRequest, 
+  ProposalGenerationResponse 
+} from './aiProposalGenerator';
 
-interface ProposalGenerationResponse {
-  success: boolean
-  content: {
-    title: string
-    sections: {
-      executive_summary: string
-      project_understanding: string
-      proposed_solution: string
-      deliverables: string
-      timeline: string
-      investment: string
-      why_choose_us: string
-      next_steps: string
-    }
-    metadata: {
-      wordCount: number
-      estimatedReadingTime: number
-      language: string
-      tone: string
-    }
-  }
-  pricing?: {
-    total: number
-    breakdown: Record<string, number>
-    currency: string
-  }
-  error?: string
+export interface AIServiceConfig {
+  anthropicApiKey?: string;
+  defaultTone?: 'professional' | 'friendly' | 'premium' | 'casual';
+  defaultLanguage?: 'en' | 'uk' | 'ru' | 'pl';
 }
 
 class AIService {
-  private anthropicApiKey: string
+  private config: AIServiceConfig;
 
-  constructor() {
-    this.anthropicApiKey = import.meta.env.VITE_ANTHROPIC_API_KEY
-    if (!this.anthropicApiKey) {
-      console.warn('Anthropic API key not found. AI features will be disabled.')
-    }
+  constructor(config: AIServiceConfig = {}) {
+    this.config = {
+      defaultTone: 'professional',
+      defaultLanguage: 'en',
+      ...config
+    };
   }
 
   /**
-   * Generate proposal content using AI
-   * This will be handled by the agent-ai-proposal-generator Cursor agent
+   * Generate a complete proposal using AI
    */
   async generateProposal(request: ProposalGenerationRequest): Promise<ProposalGenerationResponse> {
     try {
-      // In production, this would call the Cursor agent
-      // For now, return a mock response
-      return this.mockProposalGeneration(request)
-    } catch (error) {
-      console.error('Error generating proposal:', error)
-      return {
-        success: false,
-        content: {} as any,
-        error: 'Failed to generate proposal. Please try again.'
-      }
-    }
-  }
-
-  /**
-   * Parse data from external sources (Notion, CRM, etc.)
-   * This will be handled by the agent-notion-parser Cursor agent
-   */
-  async parseExternalData(source: string, data: any): Promise<any> {
-    try {
-      // In production, this would call the Cursor agent
-      return this.mockDataParsing(source, data)
-    } catch (error) {
-      console.error('Error parsing external data:', error)
-      throw new Error('Failed to parse external data')
-    }
-  }
-
-  /**
-   * Process analytics and generate insights
-   * This will be handled by the agent-analytics-engine Cursor agent
-   */
-  async processAnalytics(data: any): Promise<any> {
-    try {
-      // In production, this would call the Cursor agent
-      return this.mockAnalyticsProcessing(data)
-    } catch (error) {
-      console.error('Error processing analytics:', error)
-      throw new Error('Failed to process analytics')
-    }
-  }
-
-  /**
-   * Optimize proposal content based on analytics
-   */
-  async optimizeProposal(_proposalId: string, analyticsData: any): Promise<any> {
-    try {
-      await this.processAnalytics(analyticsData)
-      // Use insights to suggest improvements
-      return {
-        success: true,
-        suggestions: [
-          {
-            type: 'content',
-            priority: 'high',
-            title: 'Strengthen your value proposition',
-            description: 'Based on scroll patterns, clients spend less time on your value section.',
-            actionable: true
-          }
-        ]
-      }
-    } catch (error) {
-      console.error('Error optimizing proposal:', error)
-      throw new Error('Failed to optimize proposal')
-    }
-  }
-
-  // Mock implementations for development
-  private async mockProposalGeneration(request: ProposalGenerationRequest): Promise<ProposalGenerationResponse> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 2000))
-
-    const { projectData, userPreferences } = request
-    const { tone, language } = userPreferences
-
-    return {
-      success: true,
-      content: {
-        title: `${projectData.title} - Professional Proposal`,
-        sections: {
-          executive_summary: `We're excited to present this comprehensive proposal for ${projectData.title}. Our team understands ${projectData.clientName}'s unique needs and is committed to delivering exceptional results that exceed expectations.`,
-          project_understanding: `Based on our analysis, ${projectData.clientName} requires ${projectData.description}. We recognize the importance of this project and have carefully considered all requirements to ensure successful delivery.`,
-          proposed_solution: `Our approach combines industry best practices with innovative solutions tailored specifically for ${projectData.clientName}. We will deliver a comprehensive solution that addresses all stated requirements while maintaining the highest quality standards.`,
-          deliverables: projectData.deliverables?.join('\n• ') || 'Custom deliverables based on project requirements',
-          timeline: `This project will be completed within ${projectData.timeline || 30} days, with regular milestone checkpoints and progress updates throughout the development process.`,
-          investment: `Total investment: ${projectData.estimatedBudget ? `$${projectData.estimatedBudget.toLocaleString()}` : 'To be discussed based on final requirements'}`,
-          why_choose_us: 'Our team brings years of experience and a proven track record of successful project delivery. We\'re committed to your success and will work closely with you every step of the way.',
-          next_steps: 'To move forward with this proposal, simply reply to this email or click the "Accept Proposal" button below. We\'re ready to begin immediately upon approval.'
-        },
-        metadata: {
-          wordCount: 250,
-          estimatedReadingTime: 2,
-          language: language,
-          tone: tone
+      // Add default preferences if not provided
+      const requestWithDefaults: ProposalGenerationRequest = {
+        ...request,
+        userPreferences: {
+          tone: this.config.defaultTone!,
+          language: this.config.defaultLanguage!,
+          ...request.userPreferences
         }
+      };
+
+      return await aiProposalGenerator.generateProposal(requestWithDefaults);
+    } catch (error) {
+      console.error('Error in AI service:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate proposal from existing project data
+   */
+  async generateProposalFromProject(
+    project: {
+      title: string;
+      clientName: string;
+      clientEmail?: string;
+      clientCompany?: string;
+      description: string;
+      estimatedBudget?: number;
+      timeline?: number;
+      industry?: string;
+      deliverables?: string[];
+    },
+    preferences: {
+      tone?: 'professional' | 'friendly' | 'premium' | 'casual';
+      language?: 'en' | 'uk' | 'ru' | 'pl';
+      templateType?: 'web_design' | 'development' | 'branding' | 'marketing' | 'custom';
+      brandVoice?: string;
+      customInstructions?: string;
+    } = {}
+  ): Promise<ProposalGenerationResponse> {
+    const request: ProposalGenerationRequest = {
+      projectData: project,
+      userPreferences: {
+        tone: preferences.tone || this.config.defaultTone!,
+        language: preferences.language || this.config.defaultLanguage!,
+        brandVoice: preferences.brandVoice,
+        customInstructions: preferences.customInstructions
       },
-      pricing: projectData.estimatedBudget ? {
-        total: projectData.estimatedBudget,
-        breakdown: {
-          'Development': projectData.estimatedBudget * 0.6,
-          'Design': projectData.estimatedBudget * 0.3,
-          'Project Management': projectData.estimatedBudget * 0.1
-        },
-        currency: 'USD'
-      } : undefined
-    }
+      templateType: preferences.templateType
+    };
+
+    return this.generateProposal(request);
   }
 
-  private async mockDataParsing(source: string, _data: any): Promise<any> {
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    return {
-      success: true,
-      projects: [{
-        title: 'Sample Project from ' + source,
-        clientName: 'Sample Client',
-        description: 'Sample project description',
-        deliverables: ['Deliverable 1', 'Deliverable 2'],
-        estimatedBudget: 5000,
-        timeline: 30
-      }],
-      metadata: {
-        source,
-        parsedAt: new Date().toISOString(),
-        itemCount: 1,
-        language: 'en',
-        confidence: 0.85
-      }
-    }
+  /**
+   * Quick proposal generation with minimal data
+   */
+  async generateQuickProposal(
+    title: string,
+    clientName: string,
+    description: string,
+    options: {
+      budget?: number;
+      timeline?: number;
+      tone?: 'professional' | 'friendly' | 'premium' | 'casual';
+      language?: 'en' | 'uk' | 'ru' | 'pl';
+      templateType?: 'web_design' | 'development' | 'branding' | 'marketing' | 'custom';
+    } = {}
+  ): Promise<ProposalGenerationResponse> {
+    const request: ProposalGenerationRequest = {
+      projectData: {
+        title,
+        clientName,
+        description,
+        estimatedBudget: options.budget,
+        timeline: options.timeline
+      },
+      userPreferences: {
+        tone: options.tone || this.config.defaultTone!,
+        language: options.language || this.config.defaultLanguage!
+      },
+      templateType: options.templateType
+    };
+
+    return this.generateProposal(request);
   }
 
-  private async mockAnalyticsProcessing(_data: any): Promise<any> {
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    return {
-      success: true,
-      analytics: {
-        summary: {
-          totalViews: 127,
-          uniqueVisitors: 89,
-          avgTimeOnPage: 245,
-          avgScrollDepth: 73.5,
-          conversionRate: 23.5
-        },
-        insights: [
-          {
-            type: 'positive',
-            category: 'engagement',
-            title: 'High engagement rate',
-            description: 'Your proposals are getting excellent engagement with 73% average scroll depth',
-            impact: 'high',
-            actionable: false
-          }
-        ],
-        recommendations: [
-          {
-            priority: 'medium',
-            category: 'content',
-            title: 'Optimize pricing section',
-            description: 'Consider moving pricing information higher in the proposal',
-            expectedImpact: '15% increase in conversion rate',
-            implementation: 'Restructure proposal template'
-          }
-        ]
+  /**
+   * Get available templates
+   */
+  getAvailableTemplates(): Array<{
+    id: string;
+    name: string;
+    industry: string;
+    description: string;
+  }> {
+    return [
+      {
+        id: 'web_design',
+        name: 'Web Design & Development',
+        industry: 'Web Design & Development',
+        description: 'Perfect for website design, development, and digital transformation projects'
+      },
+      {
+        id: 'development',
+        name: 'Software Development',
+        industry: 'Software Development',
+        description: 'Ideal for custom software, mobile apps, and technical development projects'
+      },
+      {
+        id: 'branding',
+        name: 'Brand Design & Strategy',
+        industry: 'Brand Design & Strategy',
+        description: 'Great for brand identity, logo design, and brand strategy projects'
+      },
+      {
+        id: 'marketing',
+        name: 'Marketing & Advertising',
+        industry: 'Marketing & Advertising',
+        description: 'Excellent for marketing campaigns, digital marketing, and advertising projects'
+      },
+      {
+        id: 'custom',
+        name: 'Custom Solutions',
+        industry: 'Custom Solutions',
+        description: 'Flexible template for any type of project or service offering'
       }
+    ];
+  }
+
+  /**
+   * Get supported languages
+   */
+  getSupportedLanguages(): Array<{
+    code: string;
+    name: string;
+    nativeName: string;
+  }> {
+    return [
+      { code: 'en', name: 'English', nativeName: 'English' },
+      { code: 'uk', name: 'Ukrainian', nativeName: 'Українська' },
+      { code: 'ru', name: 'Russian', nativeName: 'Русский' },
+      { code: 'pl', name: 'Polish', nativeName: 'Polski' }
+    ];
+  }
+
+  /**
+   * Get available tones
+   */
+  getAvailableTones(): Array<{
+    id: string;
+    name: string;
+    description: string;
+  }> {
+    return [
+      {
+        id: 'professional',
+        name: 'Professional',
+        description: 'Formal language, industry terminology, structured approach'
+      },
+      {
+        id: 'friendly',
+        name: 'Friendly',
+        description: 'Conversational tone, personal touches, warm language'
+      },
+      {
+        id: 'premium',
+        name: 'Premium',
+        description: 'Sophisticated vocabulary, luxury positioning, exclusive feel'
+      },
+      {
+        id: 'casual',
+        name: 'Casual',
+        description: 'Relaxed language, approachable style, informal structure'
+      }
+    ];
+  }
+
+  /**
+   * Validate proposal request
+   */
+  validateProposalRequest(request: Partial<ProposalGenerationRequest>): {
+    isValid: boolean;
+    errors: string[];
+  } {
+    const errors: string[] = [];
+
+    if (!request.projectData?.title) {
+      errors.push('Project title is required');
     }
+
+    if (!request.projectData?.clientName) {
+      errors.push('Client name is required');
+    }
+
+    if (!request.projectData?.description || request.projectData.description.length < 10) {
+      errors.push('Project description is required and must be at least 10 characters');
+    }
+
+    if (request.userPreferences?.tone && 
+        !['professional', 'friendly', 'premium', 'casual'].includes(request.userPreferences.tone)) {
+      errors.push('Invalid tone preference');
+    }
+
+    if (request.userPreferences?.language && 
+        !['en', 'uk', 'ru', 'pl'].includes(request.userPreferences.language)) {
+      errors.push('Invalid language preference');
+    }
+
+    if (request.templateType && 
+        !['web_design', 'development', 'branding', 'marketing', 'custom'].includes(request.templateType)) {
+      errors.push('Invalid template type');
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
+
+  /**
+   * Update configuration
+   */
+  updateConfig(newConfig: Partial<AIServiceConfig>): void {
+    this.config = { ...this.config, ...newConfig };
+  }
+
+  /**
+   * Get current configuration
+   */
+  getConfig(): AIServiceConfig {
+    return { ...this.config };
+  }
+
+  /**
+   * Check if AI service is properly configured
+   */
+  isConfigured(): boolean {
+    return !!this.config.anthropicApiKey || !!import.meta.env.VITE_ANTHROPIC_API_KEY;
+  }
+
+  /**
+   * Get service status
+   */
+  getStatus(): {
+    configured: boolean;
+    defaultTone: string;
+    defaultLanguage: string;
+    availableTemplates: number;
+  } {
+    return {
+      configured: this.isConfigured(),
+      defaultTone: this.config.defaultTone!,
+      defaultLanguage: this.config.defaultLanguage!,
+      availableTemplates: this.getAvailableTemplates().length
+    };
   }
 }
 
-export const aiService = new AIService()
-export type { ProposalGenerationRequest, ProposalGenerationResponse }
+// Export singleton instance
+export const aiService = new AIService();
+export default AIService;

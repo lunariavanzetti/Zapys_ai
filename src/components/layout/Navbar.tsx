@@ -1,0 +1,152 @@
+import { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
+import { Menu, X, Zap, Plus, BarChart3, Settings, LogOut } from 'lucide-react'
+import { useAuth } from '../../contexts/AuthContext'
+import GlassCard from '../ui/GlassCard'
+import GlassButton from '../ui/GlassButton'
+import ThemeToggle from '../ui/ThemeToggle'
+
+export default function Navbar() {
+  const [isOpen, setIsOpen] = useState(false)
+  const { userProfile, signOut } = useAuth()
+  const location = useLocation()
+
+  const navigation = [
+    { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
+    { name: 'Create Proposal', href: '/create', icon: Plus },
+    { name: 'Analytics', href: '/analytics', icon: BarChart3 },
+    { name: 'Settings', href: '/settings', icon: Settings },
+  ]
+
+  const isActive = (path: string) => location.pathname === path
+
+  return (
+    <nav className="fixed top-0 left-0 right-0 z-50 px-4 py-4">
+      <GlassCard className="mx-auto max-w-7xl px-6 py-3">
+        <div className="flex items-center justify-between">
+          {/* Logo */}
+          <Link to="/dashboard" className="flex items-center space-x-2">
+            <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600">
+              <Zap className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-xl font-bold text-white">Zapys AI</span>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-1">
+            {navigation.map((item) => {
+              const Icon = item.icon
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={`flex items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
+                    isActive(item.href)
+                      ? 'bg-white/20 text-white'
+                      : 'text-white/70 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  <Icon className="h-4 w-4 mr-2" />
+                  {item.name}
+                </Link>
+              )
+            })}
+          </div>
+
+          {/* Desktop Actions */}
+          <div className="hidden md:flex items-center space-x-3">
+            <ThemeToggle />
+            
+            {/* User Menu */}
+            <div className="relative group">
+              <GlassButton variant="ghost" size="sm" className="p-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 flex items-center justify-center">
+                  <span className="text-sm font-medium text-white">
+                    {userProfile?.full_name?.charAt(0).toUpperCase() || 'U'}
+                  </span>
+                </div>
+              </GlassButton>
+              
+              {/* Dropdown */}
+              <div className="absolute right-0 mt-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                <GlassCard className="p-2 space-y-1">
+                  <div className="px-3 py-2 text-sm text-white/90">
+                    <p className="font-medium">{userProfile?.full_name || 'User'}</p>
+                    <p className="text-white/60 text-xs">{userProfile?.email}</p>
+                  </div>
+                  <hr className="border-white/20" />
+                  <Link
+                    to="/settings"
+                    className="flex items-center px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Settings
+                  </Link>
+                  <button
+                    onClick={signOut}
+                    className="flex items-center w-full px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </button>
+                </GlassCard>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden">
+            <GlassButton
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsOpen(!isOpen)}
+            >
+              {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </GlassButton>
+          </div>
+        </div>
+
+        {/* Mobile Navigation */}
+        {isOpen && (
+          <div className="md:hidden mt-4 pt-4 border-t border-white/20">
+            <div className="space-y-2">
+              {navigation.map((item) => {
+                const Icon = item.icon
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    onClick={() => setIsOpen(false)}
+                    className={`flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
+                      isActive(item.href)
+                        ? 'bg-white/20 text-white'
+                        : 'text-white/70 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <Icon className="h-4 w-4 mr-3" />
+                    {item.name}
+                  </Link>
+                )
+              })}
+              
+              <hr className="border-white/20 my-3" />
+              
+              <div className="flex items-center justify-between px-4 py-2">
+                <span className="text-sm text-white/70">Theme</span>
+                <ThemeToggle />
+              </div>
+              
+              <button
+                onClick={signOut}
+                className="flex items-center w-full px-4 py-3 text-sm text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
+              >
+                <LogOut className="h-4 w-4 mr-3" />
+                Sign Out
+              </button>
+            </div>
+          </div>
+        )}
+      </GlassCard>
+    </nav>
+  )
+}

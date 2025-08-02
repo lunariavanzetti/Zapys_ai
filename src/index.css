@@ -1,0 +1,200 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --glass-light: rgba(255, 255, 255, 0.1);
+  --glass-dark: rgba(0, 0, 0, 0.1);
+  --glass-border-light: rgba(255, 255, 255, 0.2);
+  --glass-border-dark: rgba(255, 255, 255, 0.1);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Glass morphism base styles */
+.glass-card {
+  @apply backdrop-blur-md bg-white/10 dark:bg-black/10 border border-white/20 dark:border-white/10 rounded-3xl;
+}
+
+.glass-button {
+  @apply backdrop-blur-md bg-white/20 dark:bg-white/10 border border-white/30 dark:border-white/20 rounded-2xl transition-all duration-300 hover:bg-white/30 dark:hover:bg-white/20 hover:scale-105 active:scale-95;
+}
+
+.glass-input {
+  @apply backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/30 dark:border-white/20 rounded-2xl focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-300;
+}
+
+/* Gradient backgrounds */
+.gradient-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.gradient-secondary {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.gradient-success {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+/* Dark mode specific gradients */
+.dark .gradient-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.dark .gradient-secondary {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7); }
+  50% { box-shadow: 0 0 0 10px rgba(102, 126, 234, 0); }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Text selection */
+::selection {
+  background: rgba(102, 126, 234, 0.3);
+  color: white;
+}
+
+/* Loading spinner */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #667eea;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Focus styles */
+.focus-visible:focus-visible {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}
+
+/* Utility classes for glassmorphism effects */
+.glass-blur-sm { backdrop-filter: blur(4px); }
+.glass-blur { backdrop-filter: blur(8px); }
+.glass-blur-md { backdrop-filter: blur(12px); }
+.glass-blur-lg { backdrop-filter: blur(16px); }
+.glass-blur-xl { backdrop-filter: blur(24px); }
+
+/* Background patterns */
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.dark .bg-grid-pattern {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+}
+
+/* Responsive text scaling */
+.text-responsive-xl {
+  @apply text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl;
+}
+
+.text-responsive-lg {
+  @apply text-xl sm:text-2xl md:text-3xl lg:text-4xl;
+}
+
+.text-responsive-md {
+  @apply text-lg sm:text-xl md:text-2xl;
+}
+
+/* Custom components */
+.proposal-card {
+  @apply glass-card p-6 hover:shadow-2xl transition-all duration-500;
+}
+
+.proposal-card:hover {
+  transform: translateY(-4px);
+}
+
+.status-badge {
+  @apply px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm;
+}
+
+.status-draft {
+  @apply bg-gray-500/20 text-gray-300 border border-gray-500/30;
+}
+
+.status-sent {
+  @apply bg-blue-500/20 text-blue-300 border border-blue-500/30;
+}
+
+.status-viewed {
+  @apply bg-yellow-500/20 text-yellow-300 border border-yellow-500/30;
+}
+
+.status-signed {
+  @apply bg-green-500/20 text-green-300 border border-green-500/30;
+}
+
+.status-rejected {
+  @apply bg-red-500/20 text-red-300 border border-red-500/30;
+}

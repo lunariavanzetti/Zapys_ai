@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import GlassCard from '../components/ui/GlassCard'
 import GlassButton from '../components/ui/GlassButton'
-import AIProposalGenerator from '../components/AIProposalGenerator'
+import SimpleAIGenerator from '../components/SimpleAIGenerator'
 import { OpenAIProposalResponse } from '../services/openaiService'
 import toast from 'react-hot-toast'
 
@@ -63,7 +63,7 @@ export default function ProposalBuilder() {
     }
     
     // TODO: Open preview modal or navigate to preview page
-    toast.info('Preview functionality coming soon!')
+    toast('Preview functionality coming soon!')
   }
 
   return (
@@ -103,7 +103,7 @@ export default function ProposalBuilder() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* AI Generator Form */}
           <div>
-            <AIProposalGenerator onProposalGenerated={handleProposalGenerated} />
+            <SimpleAIGenerator onProposalGenerated={handleProposalGenerated} />
           </div>
 
           {/* Live Preview */}

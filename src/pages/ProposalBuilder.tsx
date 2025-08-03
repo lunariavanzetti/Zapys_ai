@@ -67,35 +67,39 @@ export default function ProposalBuilder() {
   }
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen p-6 bg-brutalist-light-gray dark:bg-brutalist-dark-gray font-space-grotesk">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
             <Link to="/dashboard">
-              <GlassButton variant="ghost" size="sm">
+              <GlassButton variant="brutalist" size="sm">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
+                BACK
               </GlassButton>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-white">Create Proposal</h1>
-              <p className="text-white/70">Generate your winning proposal with AI in 60 seconds</p>
+              <h1 className="text-4xl font-bold text-brutalist-black dark:text-brutalist-white uppercase tracking-tight">
+                CREATE PROPOSAL
+              </h1>
+              <p className="text-brutalist-gray dark:text-brutalist-gray font-medium">
+                Generate your winning proposal with AI in 60 seconds
+              </p>
             </div>
           </div>
           
           <div className="flex items-center space-x-3">
-            <GlassButton variant="outline" onClick={handlePreview}>
+            <GlassButton variant="brutalist" onClick={handlePreview}>
               <Eye className="h-4 w-4 mr-2" />
-              Preview
+              PREVIEW
             </GlassButton>
-            <GlassButton variant="outline" onClick={handleSave} loading={loading}>
+            <GlassButton variant="brutalist" onClick={handleSave} loading={loading}>
               <Save className="h-4 w-4 mr-2" />
-              Save Draft
+              SAVE DRAFT
             </GlassButton>
-            <GlassButton onClick={handleSend} disabled={!generatedProposal?.success}>
+            <GlassButton variant="brutalist-electric" onClick={handleSend} disabled={!generatedProposal?.success}>
               <Send className="h-4 w-4 mr-2" />
-              Send Proposal
+              SEND PROPOSAL
             </GlassButton>
           </div>
         </div>
@@ -107,8 +111,8 @@ export default function ProposalBuilder() {
           </div>
 
           {/* Live Preview */}
-          <GlassCard className="p-6">
-            <h2 className="text-xl font-semibold text-white mb-6">Live Preview</h2>
+          <GlassCard variant="brutalist" className="p-6">
+            <h2 className="text-2xl font-bold text-brutalist-black dark:text-brutalist-white mb-6 uppercase tracking-wide">LIVE PREVIEW</h2>
             
             {generatedProposal?.success ? (
               <div className="prose prose-invert max-w-none">

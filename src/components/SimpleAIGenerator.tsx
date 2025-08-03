@@ -83,10 +83,10 @@ export default function SimpleAIGenerator({ onProposalGenerated }: SimpleAIGener
   }
 
   return (
-    <GlassCard className="p-6">
-      <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
-        <Wand2 className="h-5 w-5 mr-2" />
-        AI Proposal Generator
+    <GlassCard variant="brutalist" className="p-6">
+      <h2 className="text-2xl font-bold text-brutalist-black dark:text-brutalist-white mb-6 flex items-center uppercase tracking-wide">
+        <Wand2 className="h-6 w-6 mr-3" />
+        AI PROPOSAL GENERATOR
       </h2>
       
       <div className="space-y-6">
@@ -136,15 +136,15 @@ export default function SimpleAIGenerator({ onProposalGenerated }: SimpleAIGener
 
         {/* Project Description */}
         <div>
-          <label className="block text-sm font-medium text-white/90 mb-2">
-            Project Description *
+          <label className="block text-sm font-bold text-brutalist-black dark:text-brutalist-white mb-2 uppercase tracking-wide">
+            PROJECT DESCRIPTION *
           </label>
           <textarea
             name="description"
             value={formData.description}
             onChange={handleInputChange}
             rows={4}
-            className="block w-full px-4 py-3 rounded-2xl backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/30 dark:border-white/20 text-white placeholder-white/60 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-300"
+            className="block w-full px-4 py-3 border-2 border-brutalist-black dark:border-brutalist-white bg-brutalist-white dark:bg-brutalist-dark-gray text-brutalist-black dark:text-brutalist-white placeholder-brutalist-gray font-medium focus:border-electric-500 focus:shadow-electric transition-all duration-200"
             placeholder="Describe your project requirements, goals, and key deliverables..."
             required
           />
@@ -176,60 +176,61 @@ export default function SimpleAIGenerator({ onProposalGenerated }: SimpleAIGener
         {/* Preferences */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-white/90 mb-2">
-              Tone
+            <label className="block text-sm font-bold text-brutalist-black dark:text-brutalist-white mb-2 uppercase tracking-wide">
+              TONE
             </label>
             <select
               name="tone"
               value={preferences.tone}
               onChange={handlePreferenceChange}
-              className="block w-full px-4 py-3 rounded-2xl backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/30 dark:border-white/20 text-white focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-300"
+              className="block w-full px-4 py-3 border-2 border-brutalist-black dark:border-brutalist-white bg-brutalist-white dark:bg-brutalist-dark-gray text-brutalist-black dark:text-brutalist-white font-medium focus:border-electric-500 focus:shadow-electric transition-all duration-200"
             >
-              <option value="professional" className="bg-gray-800">Professional</option>
-              <option value="friendly" className="bg-gray-800">Friendly</option>
-              <option value="premium" className="bg-gray-800">Premium</option>
-              <option value="casual" className="bg-gray-800">Casual</option>
+              <option value="professional" className="bg-brutalist-white dark:bg-brutalist-dark-gray">PROFESSIONAL</option>
+              <option value="friendly" className="bg-brutalist-white dark:bg-brutalist-dark-gray">FRIENDLY</option>
+              <option value="premium" className="bg-brutalist-white dark:bg-brutalist-dark-gray">PREMIUM</option>
+              <option value="casual" className="bg-brutalist-white dark:bg-brutalist-dark-gray">CASUAL</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-white/90 mb-2">
-              Language
+            <label className="block text-sm font-bold text-brutalist-black dark:text-brutalist-white mb-2 uppercase tracking-wide">
+              LANGUAGE
             </label>
             <select
               name="language"
               value={preferences.language}
               onChange={handlePreferenceChange}
-              className="block w-full px-4 py-3 rounded-2xl backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/30 dark:border-white/20 text-white focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-300"
+              className="block w-full px-4 py-3 border-2 border-brutalist-black dark:border-brutalist-white bg-brutalist-white dark:bg-brutalist-dark-gray text-brutalist-black dark:text-brutalist-white font-medium focus:border-electric-500 focus:shadow-electric transition-all duration-200"
             >
-              <option value="en" className="bg-gray-800">English</option>
-              <option value="uk" className="bg-gray-800">Ukrainian</option>
-              <option value="ru" className="bg-gray-800">Russian</option>
-              <option value="pl" className="bg-gray-800">Polish</option>
+              <option value="en" className="bg-brutalist-white dark:bg-brutalist-dark-gray">ENGLISH</option>
+              <option value="uk" className="bg-brutalist-white dark:bg-brutalist-dark-gray">UKRAINIAN</option>
+              <option value="ru" className="bg-brutalist-white dark:bg-brutalist-dark-gray">RUSSIAN</option>
+              <option value="pl" className="bg-brutalist-white dark:bg-brutalist-dark-gray">POLISH</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-white/90 mb-2">
-              Template
+            <label className="block text-sm font-bold text-brutalist-black dark:text-brutalist-white mb-2 uppercase tracking-wide">
+              TEMPLATE
             </label>
             <select
               name="templateType"
               value={preferences.templateType}
               onChange={handlePreferenceChange}
-              className="block w-full px-4 py-3 rounded-2xl backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/30 dark:border-white/20 text-white focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-300"
+              className="block w-full px-4 py-3 border-2 border-brutalist-black dark:border-brutalist-white bg-brutalist-white dark:bg-brutalist-dark-gray text-brutalist-black dark:text-brutalist-white font-medium focus:border-electric-500 focus:shadow-electric transition-all duration-200"
             >
-              <option value="web_design" className="bg-gray-800">Web Design</option>
-              <option value="development" className="bg-gray-800">Development</option>
-              <option value="branding" className="bg-gray-800">Branding</option>
-              <option value="marketing" className="bg-gray-800">Marketing</option>
-              <option value="custom" className="bg-gray-800">Custom</option>
+              <option value="web_design" className="bg-brutalist-white dark:bg-brutalist-dark-gray">WEB DESIGN</option>
+              <option value="development" className="bg-brutalist-white dark:bg-brutalist-dark-gray">DEVELOPMENT</option>
+              <option value="branding" className="bg-brutalist-white dark:bg-brutalist-dark-gray">BRANDING</option>
+              <option value="marketing" className="bg-brutalist-white dark:bg-brutalist-dark-gray">MARKETING</option>
+              <option value="custom" className="bg-brutalist-white dark:bg-brutalist-dark-gray">CUSTOM</option>
             </select>
           </div>
         </div>
 
         {/* Generate Button */}
         <GlassButton
+          variant="brutalist-electric"
           onClick={handleGenerate}
           disabled={isGenerating || !formData.title || !formData.clientName || !formData.description}
           loading={isGenerating}
@@ -239,12 +240,12 @@ export default function SimpleAIGenerator({ onProposalGenerated }: SimpleAIGener
           {isGenerating ? (
             <>
               <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-              Generating Proposal...
+              GENERATING PROPOSAL...
             </>
           ) : (
             <>
               <Wand2 className="h-5 w-5 mr-2" />
-              Generate Proposal with AI
+              GENERATE PROPOSAL WITH AI
             </>
           )}
         </GlassButton>

@@ -4,7 +4,7 @@ import { Menu, X, Zap, Plus, BarChart3, Settings, LogOut } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import GlassCard from '../ui/GlassCard'
 import GlassButton from '../ui/GlassButton'
-import ThemeToggle from '../ui/ThemeToggle'
+import BrutalistThemeToggle from '../BrutalistThemeToggle'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -55,7 +55,7 @@ export default function Navbar() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-3">
-            <ThemeToggle />
+            <BrutalistThemeToggle />
             
             {/* User Menu */}
             <div className="relative group">
@@ -133,7 +133,7 @@ export default function Navbar() {
               
               <div className="flex items-center justify-between px-4 py-2">
                 <span className="text-sm text-white/70">Theme</span>
-                <ThemeToggle />
+                <BrutalistThemeToggle />
               </div>
               
               <button

@@ -3,7 +3,7 @@ import { cn } from '../../lib/utils'
 
 interface GlassButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode
-  variant?: 'primary' | 'secondary' | 'ghost' | 'outline'
+  variant?: 'primary' | 'secondary' | 'ghost' | 'outline' | 'brutalist' | 'brutalist-electric'
   size?: 'sm' | 'md' | 'lg' | 'xl'
   loading?: boolean
   fullWidth?: boolean
@@ -19,13 +19,19 @@ export default function GlassButton({
   disabled,
   ...props
 }: GlassButtonProps) {
-  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-2xl transition-all duration-300 backdrop-blur-md border focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500/50 disabled:opacity-50 disabled:cursor-not-allowed'
+  const isBrutalist = variant === 'brutalist' || variant === 'brutalist-electric'
+  
+  const baseClasses = isBrutalist 
+    ? 'inline-flex items-center justify-center font-bold font-space-grotesk uppercase tracking-wide transition-all duration-200 border-2 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed'
+    : 'inline-flex items-center justify-center font-medium rounded-2xl transition-all duration-300 backdrop-blur-md border focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500/50 disabled:opacity-50 disabled:cursor-not-allowed'
 
   const variantClasses = {
     primary: 'bg-gradient-to-r from-primary-500 to-primary-600 text-white border-primary-500/30 hover:from-primary-600 hover:to-primary-700 hover:scale-105 active:scale-95 shadow-lg shadow-primary-500/25',
     secondary: 'bg-white/20 dark:bg-white/10 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/20 hover:scale-105 active:scale-95',
     ghost: 'bg-transparent text-white border-transparent hover:bg-white/10 dark:hover:bg-white/5 hover:scale-105 active:scale-95',
-    outline: 'bg-transparent text-white border-white/30 dark:border-white/20 hover:bg-white/10 dark:hover:bg-white/5 hover:border-white/50 dark:hover:border-white/30 hover:scale-105 active:scale-95'
+    outline: 'bg-transparent text-white border-white/30 dark:border-white/20 hover:bg-white/10 dark:hover:bg-white/5 hover:border-white/50 dark:hover:border-white/30 hover:scale-105 active:scale-95',
+    brutalist: 'bg-brutalist-white dark:bg-brutalist-dark-gray text-brutalist-black dark:text-brutalist-white border-brutalist-black dark:border-brutalist-white shadow-brutalist dark:shadow-brutalist-white hover:shadow-brutalist-hover dark:hover:shadow-brutalist-white-hover hover:-translate-x-1 hover:-translate-y-1',
+    'brutalist-electric': 'bg-electric-500 text-brutalist-black border-brutalist-black shadow-brutalist hover:shadow-brutalist-hover hover:-translate-x-1 hover:-translate-y-1 hover:bg-electric-400 animate-electric-pulse'
   }
 
   const sizeClasses = {

@@ -37,11 +37,15 @@ function App() {
               toastOptions={{
                 duration: 4000,
                 style: {
-                  background: 'rgba(0, 0, 0, 0.8)',
-                  color: '#fff',
-                  backdropFilter: 'blur(8px)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '12px',
+                  background: '#000000',
+                  color: '#ffffff',
+                  border: '2px solid #00ff00',
+                  borderRadius: '0px',
+                  fontFamily: 'Space Grotesk, sans-serif',
+                  fontWeight: 'bold',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  boxShadow: '4px 4px 0px #00ff00',
                 },
               }}
             />

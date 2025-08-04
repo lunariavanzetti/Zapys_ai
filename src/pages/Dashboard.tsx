@@ -96,31 +96,31 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+      <div className="min-h-screen flex items-center justify-center bg-brutalist-light-gray dark:bg-brutalist-dark-gray font-space-grotesk">
+        <div className="animate-spin border-4 border-brutalist-black dark:border-brutalist-white border-t-electric-500 h-12 w-12"></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen p-6 bg-brutalist-light-gray dark:bg-brutalist-dark-gray font-space-grotesk">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white">
-              Welcome back, {userProfile?.full_name?.split(' ')[0] || 'User'}! 👋
+            <h1 className="text-4xl font-bold text-brutalist-black dark:text-brutalist-white uppercase tracking-tight">
+              WELCOME BACK, {userProfile?.full_name?.split(' ')[0]?.toUpperCase() || 'USER'}! ⚡
             </h1>
-            <p className="text-white/70 mt-1">
-              Here's what's happening with your proposals today.
+            <p className="text-brutalist-gray dark:text-brutalist-gray mt-2 font-medium uppercase tracking-wide">
+              HERE'S WHAT'S HAPPENING WITH YOUR PROPOSALS TODAY.
             </p>
           </div>
           
           <div className="mt-4 sm:mt-0">
             <Link to="/create">
-              <GlassButton size="lg">
+              <GlassButton variant="brutalist-electric" size="lg">
                 <Plus className="h-5 w-5 mr-2" />
-                Create Proposal
+                CREATE PROPOSAL
               </GlassButton>
             </Link>
           </div>
@@ -129,65 +129,65 @@ export default function Dashboard() {
         {/* Stats Grid */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <GlassCard className="p-6">
+            <GlassCard variant="brutalist" className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-white/70 text-sm font-medium">Total Proposals</p>
-                  <p className="text-3xl font-bold text-white">{stats.total_proposals}</p>
+                  <p className="text-brutalist-gray text-sm font-bold uppercase tracking-wide">TOTAL PROPOSALS</p>
+                  <p className="text-3xl font-bold text-brutalist-black dark:text-brutalist-white">{stats.total_proposals}</p>
                 </div>
-                <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
-                  <FileText className="h-6 w-6 text-blue-400" />
+                <div className="w-12 h-12 bg-electric-500 border-2 border-brutalist-black dark:border-brutalist-white shadow-brutalist dark:shadow-brutalist-white flex items-center justify-center">
+                  <FileText className="h-6 w-6 text-brutalist-black" />
                 </div>
               </div>
               <div className="mt-4 flex items-center text-sm">
-                <span className="text-green-400">+{stats.proposals_this_month}</span>
-                <span className="text-white/60 ml-1">this month</span>
+                <span className="text-electric-500 font-bold">+{stats.proposals_this_month}</span>
+                <span className="text-brutalist-gray ml-1 font-medium uppercase">THIS MONTH</span>
               </div>
             </GlassCard>
 
-            <GlassCard className="p-6">
+            <GlassCard variant="brutalist" className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-white/70 text-sm font-medium">Total Views</p>
-                  <p className="text-3xl font-bold text-white">{stats.total_views}</p>
+                  <p className="text-brutalist-gray text-sm font-bold uppercase tracking-wide">TOTAL VIEWS</p>
+                  <p className="text-3xl font-bold text-brutalist-black dark:text-brutalist-white">{stats.total_views}</p>
                 </div>
-                <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
-                  <Eye className="h-6 w-6 text-purple-400" />
+                <div className="w-12 h-12 bg-electric-500 border-2 border-brutalist-black dark:border-brutalist-white shadow-brutalist dark:shadow-brutalist-white flex items-center justify-center">
+                  <Eye className="h-6 w-6 text-brutalist-black" />
                 </div>
               </div>
               <div className="mt-4 flex items-center text-sm">
-                <TrendingUp className="h-4 w-4 text-green-400 mr-1" />
-                <span className="text-green-400">Growing</span>
+                <TrendingUp className="h-4 w-4 text-electric-500 mr-1" />
+                <span className="text-electric-500 font-bold uppercase">GROWING</span>
               </div>
             </GlassCard>
 
-            <GlassCard className="p-6">
+            <GlassCard variant="brutalist" className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-white/70 text-sm font-medium">Conversion Rate</p>
-                  <p className="text-3xl font-bold text-white">{stats.avg_conversion_rate.toFixed(1)}%</p>
+                  <p className="text-brutalist-gray text-sm font-bold uppercase tracking-wide">CONVERSION RATE</p>
+                  <p className="text-3xl font-bold text-brutalist-black dark:text-brutalist-white">{stats.avg_conversion_rate.toFixed(1)}%</p>
                 </div>
-                <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center">
-                  <TrendingUp className="h-6 w-6 text-green-400" />
+                <div className="w-12 h-12 bg-electric-500 border-2 border-brutalist-black dark:border-brutalist-white shadow-brutalist dark:shadow-brutalist-white flex items-center justify-center">
+                  <TrendingUp className="h-6 w-6 text-brutalist-black" />
                 </div>
               </div>
               <div className="mt-4 flex items-center text-sm">
-                <span className="text-white/60">Average rate</span>
+                <span className="text-brutalist-gray font-medium uppercase">AVERAGE RATE</span>
               </div>
             </GlassCard>
 
-            <GlassCard className="p-6">
+            <GlassCard variant="brutalist" className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-white/70 text-sm font-medium">Revenue (Month)</p>
-                  <p className="text-3xl font-bold text-white">{formatCurrency(stats.revenue_this_month)}</p>
+                  <p className="text-brutalist-gray text-sm font-bold uppercase tracking-wide">REVENUE (MONTH)</p>
+                  <p className="text-3xl font-bold text-brutalist-black dark:text-brutalist-white">{formatCurrency(stats.revenue_this_month)}</p>
                 </div>
-                <div className="w-12 h-12 bg-yellow-500/20 rounded-xl flex items-center justify-center">
-                  <DollarSign className="h-6 w-6 text-yellow-400" />
+                <div className="w-12 h-12 bg-electric-500 border-2 border-brutalist-black dark:border-brutalist-white shadow-brutalist dark:shadow-brutalist-white flex items-center justify-center">
+                  <DollarSign className="h-6 w-6 text-brutalist-black" />
                 </div>
               </div>
               <div className="mt-4 flex items-center text-sm">
-                <span className="text-white/60">From signed proposals</span>
+                <span className="text-brutalist-gray font-medium uppercase">FROM SIGNED PROPOSALS</span>
               </div>
             </GlassCard>
           </div>
@@ -196,37 +196,37 @@ export default function Dashboard() {
         {/* Recent Proposals */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            <GlassCard className="p-6">
+            <GlassCard variant="brutalist" className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-white">Recent Proposals</h2>
-                <Link to="/proposals" className="text-primary-400 hover:text-primary-300 text-sm">
-                  View all
+                <h2 className="text-2xl font-bold text-brutalist-black dark:text-brutalist-white uppercase tracking-wide">RECENT PROPOSALS</h2>
+                <Link to="/proposals" className="text-electric-500 hover:text-electric-400 text-sm font-bold uppercase tracking-wide">
+                  VIEW ALL
                 </Link>
               </div>
 
               {proposals.length === 0 ? (
                 <div className="text-center py-12">
                   <FileText className="h-12 w-12 text-white/30 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-white mb-2">No proposals yet</h3>
-                  <p className="text-white/60 mb-6">Create your first proposal to get started</p>
+                  <h3 className="text-lg font-bold text-brutalist-black dark:text-brutalist-white mb-2 uppercase">NO PROPOSALS YET</h3>
+                  <p className="text-brutalist-gray mb-6 font-medium uppercase">CREATE YOUR FIRST PROPOSAL TO GET STARTED</p>
                   <Link to="/create">
-                    <GlassButton>
+                    <GlassButton variant="brutalist-electric">
                       <Plus className="h-4 w-4 mr-2" />
-                      Create Proposal
+                      CREATE PROPOSAL
                     </GlassButton>
                   </Link>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {proposals.map((proposal) => (
-                    <div key={proposal.id} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors">
+                    <div key={proposal.id} className="flex items-center justify-between p-4 bg-brutalist-white dark:bg-brutalist-dark-gray border-2 border-brutalist-black dark:border-brutalist-white shadow-brutalist dark:shadow-brutalist-white hover:shadow-brutalist-hover dark:hover:shadow-brutalist-white-hover hover:-translate-x-1 hover:-translate-y-1 transition-all duration-200">
                       <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 flex items-center justify-center">
-                          <FileText className="h-5 w-5 text-white" />
+                        <div className="w-10 h-10 bg-electric-500 border-2 border-brutalist-black dark:border-brutalist-white shadow-brutalist dark:shadow-brutalist-white flex items-center justify-center">
+                          <FileText className="h-5 w-5 text-brutalist-black" />
                         </div>
                         <div>
-                          <h3 className="font-medium text-white">{proposal.title}</h3>
-                          <p className="text-sm text-white/60">
+                          <h3 className="font-bold text-brutalist-black dark:text-brutalist-white uppercase">{proposal.title}</h3>
+                          <p className="text-sm text-brutalist-gray font-medium uppercase">
                             {proposal.client_name} • {formatRelativeTime(proposal.updated_at)}
                           </p>
                         </div>
@@ -238,11 +238,11 @@ export default function Dashboard() {
                         </span>
                         
                         <div className="text-right">
-                          <p className="text-sm font-medium text-white">
+                          <p className="text-sm font-bold text-brutalist-black dark:text-brutalist-white">
                             {proposal.pricing_total ? formatCurrency(proposal.pricing_total) : '—'}
                           </p>
-                          <p className="text-xs text-white/60">
-                            {proposal.total_views} views
+                          <p className="text-xs text-brutalist-gray font-medium uppercase">
+                            {proposal.total_views} VIEWS
                           </p>
                         </div>
                         
@@ -259,46 +259,46 @@ export default function Dashboard() {
 
           {/* Quick Actions */}
           <div className="space-y-6">
-            <GlassCard className="p-6">
-              <h2 className="text-lg font-semibold text-white mb-4">Quick Actions</h2>
+            <GlassCard variant="brutalist" className="p-6">
+              <h2 className="text-lg font-bold text-brutalist-black dark:text-brutalist-white mb-4 uppercase tracking-wide">QUICK ACTIONS</h2>
               <div className="space-y-3">
                 <Link to="/create">
-                  <GlassButton variant="outline" fullWidth className="justify-start">
+                  <GlassButton variant="brutalist" fullWidth className="justify-start">
                     <Plus className="h-4 w-4 mr-3" />
-                    Create New Proposal
+                    CREATE NEW PROPOSAL
                   </GlassButton>
                 </Link>
                 
                 <Link to="/templates">
-                  <GlassButton variant="outline" fullWidth className="justify-start">
+                  <GlassButton variant="brutalist" fullWidth className="justify-start">
                     <FileText className="h-4 w-4 mr-3" />
-                    Browse Templates
+                    BROWSE TEMPLATES
                   </GlassButton>
                 </Link>
                 
                 <Link to="/analytics">
-                  <GlassButton variant="outline" fullWidth className="justify-start">
+                  <GlassButton variant="brutalist" fullWidth className="justify-start">
                     <TrendingUp className="h-4 w-4 mr-3" />
-                    View Analytics
+                    VIEW ANALYTICS
                   </GlassButton>
                 </Link>
                 
                 <Link to="/settings">
-                  <GlassButton variant="outline" fullWidth className="justify-start">
+                  <GlassButton variant="brutalist" fullWidth className="justify-start">
                     <Users className="h-4 w-4 mr-3" />
-                    Team Settings
+                    TEAM SETTINGS
                   </GlassButton>
                 </Link>
               </div>
             </GlassCard>
 
             {/* Subscription Status */}
-            <GlassCard className="p-6">
-              <h2 className="text-lg font-semibold text-white mb-4">Subscription</h2>
+            <GlassCard variant="brutalist" className="p-6">
+              <h2 className="text-lg font-bold text-brutalist-black dark:text-brutalist-white mb-4 uppercase tracking-wide">SUBSCRIPTION</h2>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-white/70">Current Plan</span>
-                  <span className="text-white font-medium capitalize">
+                  <span className="text-brutalist-gray font-medium uppercase tracking-wide">CURRENT PLAN</span>
+                  <span className="text-brutalist-black dark:text-brutalist-white font-bold uppercase">
                     {userProfile?.subscription_tier || 'Free'}
                   </span>
                 </div>
@@ -306,13 +306,13 @@ export default function Dashboard() {
                 {userProfile?.subscription_tier === 'free' && (
                   <>
                     <div className="flex items-center justify-between">
-                      <span className="text-white/70">Proposals Used</span>
-                      <span className="text-white">0 / 5</span>
+                      <span className="text-brutalist-gray font-medium uppercase tracking-wide">PROPOSALS USED</span>
+                      <span className="text-brutalist-black dark:text-brutalist-white font-bold">0 / 5</span>
                     </div>
                     
                     <Link to="/settings?tab=billing">
-                      <GlassButton size="sm" fullWidth>
-                        Upgrade Plan
+                      <GlassButton variant="brutalist-electric" size="sm" fullWidth>
+                        UPGRADE PLAN
                       </GlassButton>
                     </Link>
                   </>

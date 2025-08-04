@@ -176,25 +176,25 @@ body {
 }
 
 .status-badge {
-  @apply px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm;
+  @apply px-3 py-1 text-xs font-bold uppercase tracking-wide border-2 shadow-brutalist;
 }
 
 .status-draft {
-  @apply bg-gray-500/20 text-gray-300 border border-gray-500/30;
+  @apply bg-brutalist-gray text-brutalist-white border-brutalist-black;
 }
 
 .status-sent {
-  @apply bg-blue-500/20 text-blue-300 border border-blue-500/30;
+  @apply bg-blue-500 text-brutalist-black border-brutalist-black;
 }
 
 .status-viewed {
-  @apply bg-yellow-500/20 text-yellow-300 border border-yellow-500/30;
+  @apply bg-yellow-500 text-brutalist-black border-brutalist-black;
 }
 
 .status-signed {
-  @apply bg-green-500/20 text-green-300 border border-green-500/30;
+  @apply bg-electric-500 text-brutalist-black border-brutalist-black;
 }
 
 .status-rejected {
-  @apply bg-red-500/20 text-red-300 border border-red-500/30;
+  @apply bg-red-500 text-brutalist-white border-brutalist-black;
 }

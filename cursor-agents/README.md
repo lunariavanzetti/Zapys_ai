@@ -4,7 +4,7 @@ This directory contains the configuration and prompts for Cursor background agen
 
 ## 🤖 Agents Overview
 
-Run these 3 agents simultaneously in Cursor for optimal development:
+Run these 4 agents simultaneously in Cursor for optimal development:
 
 ### 1. `agent-ai-proposal-generator`
 **Purpose**: Generates complete proposal content using AI
@@ -20,6 +20,11 @@ Run these 3 agents simultaneously in Cursor for optimal development:
 **Purpose**: Processes and analyzes user engagement data
 **Input**: User interaction events, view data
 **Output**: Analytics insights and recommendations
+
+### 4. `agent-ai-pricing-timeline`
+**Purpose**: Generates competitive pricing and accurate timeline estimates
+**Input**: Project deliverables, market data, client location, industry
+**Output**: Detailed pricing breakdown and project timeline with risk analysis
 
 ## 🚀 How to Use
 

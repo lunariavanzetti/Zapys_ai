@@ -26,13 +26,7 @@ function App() {
               
               {/* Protected routes */}
               <Route element={<ProtectedRoute />}>
-                <Route element={<AppLayout />}>
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/create" element={<ProposalBuilder />} />
-                  <Route path="/proposal/:id/edit" element={<ProposalBuilder />} />
-                  <Route path="/analytics" element={<Analytics />} />
-                  <Route path="/settings" element={<Settings />} />
-                </Route>
+                <Route element={<AppLayout />} />
               </Route>
             </Routes>
             
@@ -63,7 +57,11 @@ function AppLayout() {
       <Navbar />
       <main className="pt-16">
         <Routes>
-          <Route path="/*" element={null} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/create" element={<ProposalBuilder />} />
+          <Route path="/proposal/:id/edit" element={<ProposalBuilder />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </main>
     </>

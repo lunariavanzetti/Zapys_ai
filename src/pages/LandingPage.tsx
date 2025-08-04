@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, Zap, BarChart3, Globe, Users } from 'lucide-react'
 import GlassCard from '../components/ui/GlassCard'
 import GlassButton from '../components/ui/GlassButton'
-import ThemeToggle from '../components/ui/ThemeToggle'
+import BrutalistThemeToggle from '../components/BrutalistThemeToggle'
 
 export default function LandingPage() {
   const features = [
@@ -53,23 +53,23 @@ export default function LandingPage() {
   ]
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-brutalist-light-gray dark:bg-brutalist-dark-gray font-space-grotesk">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 px-4 py-4">
-        <GlassCard className="mx-auto max-w-7xl px-6 py-3">
+        <GlassCard variant="brutalist" className="mx-auto max-w-7xl px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600">
-                <Zap className="h-5 w-5 text-white" />
+              <div className="flex items-center justify-center w-10 h-10 bg-electric-500 border-2 border-brutalist-black dark:border-brutalist-white shadow-brutalist dark:shadow-brutalist-white">
+                <Zap className="h-6 w-6 text-brutalist-black" />
               </div>
-              <span className="text-xl font-bold text-white">Zapys AI</span>
+              <span className="text-2xl font-bold text-brutalist-black dark:text-brutalist-white uppercase tracking-wide">ZAPYS AI</span>
             </div>
             
             <div className="flex items-center space-x-4">
-              <ThemeToggle />
+              <BrutalistThemeToggle />
               <Link to="/auth">
-                <GlassButton variant="outline" size="sm">
-                  Sign In
+                <GlassButton variant="brutalist" size="sm">
+                  SIGN IN
                 </GlassButton>
               </Link>
             </div>
@@ -81,33 +81,33 @@ export default function LandingPage() {
       <section className="pt-32 pb-20 px-4">
         <div className="max-w-7xl mx-auto text-center">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-responsive-xl font-bold text-white mb-6 animate-fade-in">
-              Generate Winning Proposals in{' '}
-              <span className="bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent">
-                60 Seconds
+            <h1 className="text-6xl font-bold text-brutalist-black dark:text-brutalist-white mb-6 animate-fade-in uppercase tracking-tight">
+              GENERATE WINNING PROPOSALS IN{' '}
+              <span className="text-electric-500 shadow-electric animate-electric-pulse">
+                60 SECONDS
               </span>
             </h1>
             
-            <p className="text-responsive-md text-white/80 mb-8 max-w-3xl mx-auto animate-slide-up">
-              AI-powered proposal generator for freelancers and agencies. Connect your Notion, 
-              generate beautiful proposals, and win more clients with real-time analytics.
+            <p className="text-xl text-brutalist-gray dark:text-brutalist-gray mb-8 max-w-3xl mx-auto animate-slide-up font-medium">
+              AI-POWERED PROPOSAL GENERATOR FOR FREELANCERS AND AGENCIES. CONNECT YOUR NOTION, 
+              GENERATE BEAUTIFUL PROPOSALS, AND WIN MORE CLIENTS WITH REAL-TIME ANALYTICS.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up">
               <Link to="/auth">
-                <GlassButton size="lg" className="min-w-48">
-                  Start Free Trial
+                <GlassButton variant="brutalist-electric" size="lg" className="min-w-48">
+                  START FREE TRIAL
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </GlassButton>
               </Link>
               
-              <GlassButton variant="outline" size="lg" className="min-w-48">
-                Watch Demo
+              <GlassButton variant="brutalist" size="lg" className="min-w-48">
+                WATCH DEMO
               </GlassButton>
             </div>
             
-            <p className="text-sm text-white/60 mt-4">
-              Free 14-day trial • No credit card required
+            <p className="text-sm text-brutalist-gray dark:text-brutalist-gray mt-4 font-medium uppercase tracking-wide">
+              FREE 14-DAY TRIAL • NO CREDIT CARD REQUIRED
             </p>
           </div>
         </div>

@@ -46,7 +46,7 @@ export default function LandingPage() {
     {
       name: 'Dmitry Petrov',
       role: 'Full-stack Developer',
-      location: 'Moscow, Russia',
+      location: 'Prague, Czech Republic',
       content: 'The pricing suggestions are incredibly accurate. Helps me price projects confidently.',
       avatar: 'DP'
     }

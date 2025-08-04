@@ -11,6 +11,7 @@ import ProposalView from './pages/ProposalView'
 import Analytics from './pages/Analytics'
 import Settings from './pages/Settings'
 import AuthPage from './pages/AuthPage'
+import AuthCallback from './pages/AuthCallback'
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
               {/* Public routes */}
               <Route path="/" element={<LandingPage />} />
               <Route path="/auth" element={<AuthPage />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/proposal/:slug" element={<ProposalView />} />
               
               {/* Protected routes */}

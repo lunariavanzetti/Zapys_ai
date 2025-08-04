@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext'
 import GlassCard from '../components/ui/GlassCard'
 import GlassButton from '../components/ui/GlassButton'
 import GlassInput from '../components/ui/GlassInput'
-import ThemeToggle from '../components/ui/ThemeToggle'
+import BrutalistThemeToggle from '../components/BrutalistThemeToggle'
 import toast from 'react-hot-toast'
 
 export default function AuthPage() {
@@ -81,33 +81,33 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-brutalist-light-gray dark:bg-brutalist-dark-gray font-space-grotesk">
       {/* Navigation */}
       <nav className="p-4">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <Link to="/" className="flex items-center space-x-2">
-            <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600">
-              <Zap className="h-5 w-5 text-white" />
+            <div className="flex items-center justify-center w-10 h-10 bg-electric-500 border-2 border-brutalist-black dark:border-brutalist-white shadow-brutalist dark:shadow-brutalist-white">
+              <Zap className="h-6 w-6 text-brutalist-black" />
             </div>
-            <span className="text-xl font-bold text-white">Zapys AI</span>
+            <span className="text-2xl font-bold text-brutalist-black dark:text-brutalist-white uppercase tracking-wide">ZAPYS AI</span>
           </Link>
-          <ThemeToggle />
+          <BrutalistThemeToggle />
         </div>
       </nav>
 
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
-          <GlassCard className="p-8">
+          <GlassCard variant="brutalist" className="p-8">
             {/* Header */}
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-white mb-2">
-                {isSignUp ? 'Create Account' : 'Welcome Back'}
+              <h1 className="text-4xl font-bold text-brutalist-black dark:text-brutalist-white mb-4 uppercase tracking-tight">
+                {isSignUp ? 'CREATE ACCOUNT' : 'WELCOME BACK'}
               </h1>
-              <p className="text-white/70">
+              <p className="text-brutalist-gray dark:text-brutalist-gray font-medium uppercase tracking-wide">
                 {isSignUp 
-                  ? 'Start creating winning proposals with AI' 
-                  : 'Sign in to your Zapys AI account'
+                  ? 'START CREATING WINNING PROPOSALS WITH AI' 
+                  : 'SIGN IN TO YOUR ZAPYS AI ACCOUNT'
                 }
               </p>
             </div>
@@ -115,7 +115,7 @@ export default function AuthPage() {
             {/* Social Sign In */}
             <div className="space-y-3 mb-6">
               <GlassButton
-                variant="outline"
+                variant="brutalist"
                 fullWidth
                 onClick={handleGoogleSignIn}
                 className="justify-center"
@@ -126,11 +126,11 @@ export default function AuthPage() {
                   <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                   <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                 </svg>
-                Continue with Google
+                CONTINUE WITH GOOGLE
               </GlassButton>
 
               <GlassButton
-                variant="outline"
+                variant="brutalist"
                 fullWidth
                 onClick={handleAppleSignIn}
                 className="justify-center"
@@ -138,17 +138,17 @@ export default function AuthPage() {
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
                 </svg>
-                Continue with Apple
+                CONTINUE WITH APPLE
               </GlassButton>
             </div>
 
             {/* Divider */}
             <div className="relative mb-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/20"></div>
+                <div className="w-full border-t-2 border-brutalist-black dark:border-brutalist-white"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-transparent text-white/60">or</span>
+                <span className="px-4 bg-brutalist-white dark:bg-brutalist-dark-gray text-brutalist-gray font-bold uppercase tracking-wide">OR</span>
               </div>
             </div>
 
@@ -156,7 +156,8 @@ export default function AuthPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {isSignUp && (
                 <GlassInput
-                  label="Full Name"
+                  variant="brutalist"
+                  label="FULL NAME"
                   name="fullName"
                   type="text"
                   value={formData.fullName}
@@ -168,7 +169,8 @@ export default function AuthPage() {
               )}
 
               <GlassInput
-                label="Email"
+                variant="brutalist"
+                label="EMAIL"
                 name="email"
                 type="email"
                 value={formData.email}
@@ -179,7 +181,8 @@ export default function AuthPage() {
               />
 
               <GlassInput
-                label="Password"
+                variant="brutalist"
+                label="PASSWORD"
                 name="password"
                 type="password"
                 value={formData.password}
@@ -190,12 +193,13 @@ export default function AuthPage() {
               />
 
               <GlassButton
+                variant="brutalist-electric"
                 type="submit"
                 fullWidth
                 loading={loading}
                 size="lg"
               >
-                {isSignUp ? 'Create Account' : 'Sign In'}
+                {isSignUp ? 'CREATE ACCOUNT' : 'SIGN IN'}
               </GlassButton>
             </form>
 
@@ -204,17 +208,17 @@ export default function AuthPage() {
               <button
                 type="button"
                 onClick={() => setIsSignUp(!isSignUp)}
-                className="text-white/70 hover:text-white transition-colors"
+                className="text-brutalist-gray hover:text-brutalist-black dark:hover:text-brutalist-white transition-colors font-medium uppercase tracking-wide"
               >
                 {isSignUp ? (
                   <>
-                    Already have an account?{' '}
-                    <span className="text-primary-400 font-medium">Sign in</span>
+                    ALREADY HAVE AN ACCOUNT?{' '}
+                    <span className="text-electric-500 font-bold">SIGN IN</span>
                   </>
                 ) : (
                   <>
-                    Don't have an account?{' '}
-                    <span className="text-primary-400 font-medium">Sign up</span>
+                    DON'T HAVE AN ACCOUNT?{' '}
+                    <span className="text-electric-500 font-bold">SIGN UP</span>
                   </>
                 )}
               </button>
@@ -222,14 +226,14 @@ export default function AuthPage() {
 
             {/* Terms */}
             {isSignUp && (
-              <p className="mt-4 text-xs text-white/60 text-center">
-                By creating an account, you agree to our{' '}
-                <a href="#" className="text-primary-400 hover:underline">
-                  Terms of Service
+              <p className="mt-4 text-xs text-brutalist-gray text-center font-medium uppercase tracking-wide">
+                BY CREATING AN ACCOUNT, YOU AGREE TO OUR{' '}
+                <a href="#" className="text-electric-500 hover:text-electric-400 font-bold">
+                  TERMS OF SERVICE
                 </a>{' '}
-                and{' '}
-                <a href="#" className="text-primary-400 hover:underline">
-                  Privacy Policy
+                AND{' '}
+                <a href="#" className="text-electric-500 hover:text-electric-400 font-bold">
+                  PRIVACY POLICY
                 </a>
               </p>
             )}
@@ -239,9 +243,9 @@ export default function AuthPage() {
           <div className="text-center mt-6">
             <Link
               to="/"
-              className="text-white/60 hover:text-white transition-colors text-sm"
+              className="text-brutalist-gray hover:text-brutalist-black dark:hover:text-brutalist-white transition-colors text-sm font-bold uppercase tracking-wide"
             >
-              ← Back to home
+              ← BACK TO HOME
             </Link>
           </div>
         </div>

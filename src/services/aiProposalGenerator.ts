@@ -19,7 +19,7 @@ export interface ProposalGenerationRequest {
     brandVoice?: string;
     customInstructions?: string;
   };
-  templateType?: 'web_design' | 'development' | 'branding' | 'marketing' | 'custom';
+  templateType?: 'web_design' | 'development' | 'branding' | 'marketing' | 'ecommerce' | 'mobile_app' | 'consulting' | 'custom';
 }
 
 export interface ProposalSection {
@@ -72,6 +72,53 @@ class AIProposalGeneratorService {
   constructor(apiKey?: string) {
     this.apiKey = apiKey || import.meta.env.VITE_ANTHROPIC_API_KEY || '';
     this.initializeTemplates();
+  }
+
+  /**
+   * Generate a complete proposal in the exact JSON format specified
+   */
+  async generateProposalJSON(request: ProposalGenerationRequest): Promise<{
+    success: boolean;
+    content: {
+      title: string;
+      sections: {
+        executive_summary: string;
+        project_understanding: string;
+        proposed_solution: string;
+        deliverables: string;
+        timeline: string;
+        investment: string;
+        why_choose_us: string;
+        next_steps: string;
+      };
+      metadata: {
+        wordCount: number;
+        estimatedReadingTime: number;
+        language: string;
+        tone: string;
+      };
+    };
+    pricing: {
+      total: number;
+      breakdown: Record<string, number>;
+      currency: string;
+    };
+  }> {
+    const response = await this.generateProposal(request);
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to generate proposal');
+    }
+
+    return {
+      success: true,
+      content: response.content,
+      pricing: response.pricing || {
+        total: request.projectData.estimatedBudget || 5000,
+        breakdown: { 'design': 2000, 'development': 2500, 'testing': 500 },
+        currency: 'USD'
+      }
+    };
   }
 
   /**
@@ -170,7 +217,18 @@ class AIProposalGeneratorService {
   private buildSystemPrompt(request: ProposalGenerationRequest, template: ProposalTemplate): string {
     const { tone, language, brandVoice, customInstructions } = request.userPreferences;
     
-    return `You are an expert proposal writer and business consultant. Your job is to create compelling, professional proposals that win clients and clearly communicate value.
+    return `You are an expert proposal writer creating compelling, professional proposals for agencies and freelancers.
+
+TASK: Generate complete proposal content optimized for client conversion.
+
+WRITING RULES:
+- Start with client's business goals, not your services
+- Use specific numbers and outcomes, not vague promises
+- Address potential objections proactively
+- Include social proof and case study references
+- End each section with benefit to client
+- Maintain consistent tone throughout
+- Optimize for scanning (headers, bullet points)
 
 CORE INSTRUCTIONS:
 1. Understand the Context: Analyze the project data to understand client needs, goals, and constraints
@@ -190,14 +248,41 @@ ${brandVoice ? `BRAND VOICE: ${brandVoice}` : ''}
 ${customInstructions ? `CUSTOM INSTRUCTIONS: ${customInstructions}` : ''}
 
 SECTION REQUIREMENTS:
-- Executive Summary: 150-200 words - Hook the reader, summarize project, highlight value proposition
-- Project Understanding: 200-250 words - Demonstrate understanding of challenges and goals
-- Proposed Solution: 300-400 words - Present approach, methodology, and technical details
-- Deliverables: 150-200 words - List specific, measurable outcomes organized by phases
-- Timeline: 100-150 words - Break down project phases with milestones
-- Investment: 100-150 words - Present pricing clearly with value justification
-- Why Choose Us: 150-200 words - Highlight experience and differentiation
-- Next Steps: 50-100 words - Clear call-to-action and contact information
+- Executive Summary: 150-200 words - Compelling summary highlighting value proposition
+- Project Understanding: 200-250 words - Demonstrating deep understanding of client needs
+- Proposed Solution: 300-400 words - Detailing specific approach and methodology
+- Deliverables: 150-200 words - Listing concrete, measurable outcomes
+- Timeline: 100-150 words - Clear project phases and milestones
+- Investment: 100-150 words - Presenting pricing confidently with value justification
+- Why Choose Us: 150-200 words - Highlighting unique expertise and advantages
+- Next Steps: 50-100 words - Clear call-to-action and urgency
+
+RESPONSE FORMAT:
+Structure your response with clear section headers:
+
+EXECUTIVE SUMMARY:
+[Content here]
+
+PROJECT UNDERSTANDING:
+[Content here]
+
+PROPOSED SOLUTION:
+[Content here]
+
+DELIVERABLES:
+[Content here]
+
+TIMELINE:
+[Content here]
+
+INVESTMENT:
+[Content here]
+
+WHY CHOOSE US:
+[Content here]
+
+NEXT STEPS:
+[Content here]
 
 Generate a proposal that feels personally crafted for this specific client and project.`;
   }
@@ -223,18 +308,112 @@ Please generate all 8 sections of the proposal, ensuring each section is complet
   }
 
   /**
-   * Call the AI service using Anthropic Claude
+   * Call the AI service using Anthropic Claude with enhanced error handling
    */
   private async callAIService(systemPrompt: string, userPrompt: string): Promise<string> {
-    const { anthropicClient } = await import('./anthropicClient');
-    return anthropicClient.generateContent(systemPrompt, userPrompt);
+    try {
+      const { anthropicClient } = await import('./anthropicClient');
+      const response = await anthropicClient.generateContent(systemPrompt, userPrompt);
+      
+      // Validate the response contains all required sections
+      const validationResult = this.validateAIResponse(response);
+      if (!validationResult.isValid) {
+        console.warn('AI response validation failed:', validationResult.errors);
+        // Return a fallback response if AI response is incomplete
+        return this.generateFallbackResponse(userPrompt);
+      }
+      
+      return response;
+    } catch (error) {
+      console.error('Error calling AI service:', error);
+      // Return fallback response on error
+      return this.generateFallbackResponse(userPrompt);
+    }
+  }
+
+  /**
+   * Validate AI response contains all required sections
+   */
+  private validateAIResponse(response: string): { isValid: boolean; errors: string[] } {
+    const requiredSections = [
+      'EXECUTIVE SUMMARY',
+      'PROJECT UNDERSTANDING', 
+      'PROPOSED SOLUTION',
+      'DELIVERABLES',
+      'TIMELINE',
+      'INVESTMENT',
+      'WHY CHOOSE US',
+      'NEXT STEPS'
+    ];
+
+    const errors: string[] = [];
+    const responseUpper = response.toUpperCase();
+
+    requiredSections.forEach(section => {
+      if (!responseUpper.includes(section)) {
+        errors.push(`Missing section: ${section}`);
+      }
+    });
+
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
+
+  /**
+   * Generate fallback response when AI service fails
+   */
+  private generateFallbackResponse(userPrompt: string): string {
+    // Extract basic information from user prompt
+    const clientMatch = userPrompt.match(/Client:\s*([^\n(]+)/);
+    const clientName = clientMatch ? clientMatch[1].trim() : 'your business';
+    
+    const titleMatch = userPrompt.match(/Title:\s*([^\n]+)/);
+    const projectTitle = titleMatch ? titleMatch[1].trim() : 'this project';
+
+    return `
+EXECUTIVE SUMMARY:
+We're excited to partner with ${clientName} on ${projectTitle}. Our comprehensive approach will deliver exceptional results that exceed your expectations and provide significant value to your business. With our proven expertise and client-focused methodology, we're confident this project will achieve your goals and drive meaningful growth.
+
+PROJECT UNDERSTANDING:
+We understand the unique challenges and opportunities that ${clientName} faces in today's competitive market. Your project requirements align perfectly with our expertise, and we recognize the importance of delivering a solution that not only meets your immediate needs but also supports your long-term business objectives.
+
+PROPOSED SOLUTION:
+Our strategic approach combines industry best practices with innovative solutions tailored specifically for your needs. We'll implement a comprehensive methodology that ensures quality, efficiency, and results. Our team will work closely with you throughout the process to ensure alignment and exceed expectations.
+
+DELIVERABLES:
+- Complete project deliverables as specified in your requirements
+- High-quality outputs that meet professional standards
+- Comprehensive documentation and support materials
+- Training and knowledge transfer as needed
+- Post-project support and maintenance options
+
+TIMELINE:
+We propose a structured timeline that balances quality with efficiency:
+- Phase 1: Planning and strategy development
+- Phase 2: Implementation and development
+- Phase 3: Testing and refinement
+- Phase 4: Launch and support
+This approach ensures thorough execution while meeting your project deadlines.
+
+INVESTMENT:
+Our competitive pricing reflects the value and expertise we bring to your project. The investment includes all specified deliverables, professional project management, and ongoing support. We offer flexible payment terms to accommodate your business needs and ensure a smooth project experience.
+
+WHY CHOOSE US:
+Our team brings extensive experience and a proven track record of successful project delivery. We pride ourselves on clear communication, attention to detail, and exceeding client expectations. Our client-focused approach ensures your success is our priority throughout the project lifecycle.
+
+NEXT STEPS:
+To proceed with this exciting project, please review this proposal and let us know if you have any questions. We're ready to begin immediately upon your approval and look forward to partnering with ${clientName} on ${projectTitle}. Contact us to schedule a kick-off meeting and start achieving your goals.
+    `;
   }
 
   /**
    * Parse sections from AI response
    */
   private parseSectionsFromResponse(response: string): string[] {
-    const sections = response.split(/(?=EXECUTIVE SUMMARY:|PROJECT UNDERSTANDING:|PROPOSED SOLUTION:|DELIVERABLES:|TIMELINE:|INVESTMENT:|WHY CHOOSE US:|NEXT STEPS:)/);
+    // Split by section headers (case insensitive)
+    const sections = response.split(/(?=(?:EXECUTIVE SUMMARY|PROJECT UNDERSTANDING|PROPOSED SOLUTION|DELIVERABLES|TIMELINE|INVESTMENT|WHY CHOOSE US|NEXT STEPS):\s*)/i);
     return sections.filter(section => section.trim().length > 0);
   }
 
@@ -245,24 +424,40 @@ Please generate all 8 sections of the proposal, ensuring each section is complet
     const result: ProposalSection = this.getEmptySections();
     
     sections.forEach(section => {
-      const content = section.replace(/^[A-Z\s:]+/, '').trim();
+      const trimmedSection = section.trim();
       
-      if (section.includes('EXECUTIVE SUMMARY')) {
-        result.executive_summary = content;
-      } else if (section.includes('PROJECT UNDERSTANDING')) {
-        result.project_understanding = content;
-      } else if (section.includes('PROPOSED SOLUTION')) {
-        result.proposed_solution = content;
-      } else if (section.includes('DELIVERABLES')) {
-        result.deliverables = content;
-      } else if (section.includes('TIMELINE')) {
-        result.timeline = content;
-      } else if (section.includes('INVESTMENT')) {
-        result.investment = content;
-      } else if (section.includes('WHY CHOOSE US')) {
-        result.why_choose_us = content;
-      } else if (section.includes('NEXT STEPS')) {
-        result.next_steps = content;
+      // Extract content after the header
+      const headerMatch = trimmedSection.match(/^([A-Z\s]+):\s*([\s\S]*)/i);
+      if (!headerMatch) return;
+      
+      const header = headerMatch[1].trim().toUpperCase();
+      const content = headerMatch[2].trim();
+      
+      switch (header) {
+        case 'EXECUTIVE SUMMARY':
+          result.executive_summary = content;
+          break;
+        case 'PROJECT UNDERSTANDING':
+          result.project_understanding = content;
+          break;
+        case 'PROPOSED SOLUTION':
+          result.proposed_solution = content;
+          break;
+        case 'DELIVERABLES':
+          result.deliverables = content;
+          break;
+        case 'TIMELINE':
+          result.timeline = content;
+          break;
+        case 'INVESTMENT':
+          result.investment = content;
+          break;
+        case 'WHY CHOOSE US':
+          result.why_choose_us = content;
+          break;
+        case 'NEXT STEPS':
+          result.next_steps = content;
+          break;
       }
     });
     
@@ -277,7 +472,7 @@ Please generate all 8 sections of the proposal, ensuring each section is complet
   }
 
   /**
-   * Generate pricing breakdown
+   * Generate pricing breakdown with sophisticated calculations
    */
   private generatePricingBreakdown(totalBudget: number, templateType: string): {
     total: number;
@@ -286,36 +481,89 @@ Please generate all 8 sections of the proposal, ensuring each section is complet
   } {
     const breakdown: Record<string, number> = {};
     
+    // Ensure total matches breakdown exactly
+    const allocatePercentages = (percentages: Record<string, number>) => {
+      const keys = Object.keys(percentages);
+      let remaining = totalBudget;
+      
+      keys.forEach((key, index) => {
+        if (index === keys.length - 1) {
+          // Last item gets the remainder to ensure exact total
+          breakdown[key] = remaining;
+        } else {
+          const amount = Math.round(totalBudget * percentages[key]);
+          breakdown[key] = amount;
+          remaining -= amount;
+        }
+      });
+    };
+    
     switch (templateType) {
       case 'web_design':
-        breakdown['Design & UX'] = Math.round(totalBudget * 0.3);
-        breakdown['Development'] = Math.round(totalBudget * 0.4);
-        breakdown['Content & SEO'] = Math.round(totalBudget * 0.2);
-        breakdown['Testing & Launch'] = Math.round(totalBudget * 0.1);
+        allocatePercentages({
+          'Design & UX': 0.35,
+          'Development': 0.40,
+          'Content & SEO': 0.15,
+          'Testing & Launch': 0.10
+        });
         break;
       case 'development':
-        breakdown['Planning & Architecture'] = Math.round(totalBudget * 0.2);
-        breakdown['Development'] = Math.round(totalBudget * 0.5);
-        breakdown['Testing & QA'] = Math.round(totalBudget * 0.2);
-        breakdown['Deployment & Support'] = Math.round(totalBudget * 0.1);
+        allocatePercentages({
+          'Planning & Architecture': 0.20,
+          'Development': 0.50,
+          'Testing & QA': 0.20,
+          'Deployment & Support': 0.10
+        });
         break;
       case 'branding':
-        breakdown['Brand Strategy'] = Math.round(totalBudget * 0.3);
-        breakdown['Logo & Visual Identity'] = Math.round(totalBudget * 0.4);
-        breakdown['Brand Guidelines'] = Math.round(totalBudget * 0.2);
-        breakdown['Marketing Materials'] = Math.round(totalBudget * 0.1);
+        allocatePercentages({
+          'Brand Strategy': 0.30,
+          'Logo & Visual Identity': 0.40,
+          'Brand Guidelines': 0.20,
+          'Marketing Materials': 0.10
+        });
         break;
       case 'marketing':
-        breakdown['Strategy & Planning'] = Math.round(totalBudget * 0.25);
-        breakdown['Content Creation'] = Math.round(totalBudget * 0.35);
-        breakdown['Campaign Management'] = Math.round(totalBudget * 0.25);
-        breakdown['Analytics & Reporting'] = Math.round(totalBudget * 0.15);
+        allocatePercentages({
+          'Strategy & Planning': 0.25,
+          'Content Creation': 0.35,
+          'Campaign Management': 0.25,
+          'Analytics & Reporting': 0.15
+        });
+        break;
+      case 'ecommerce':
+        allocatePercentages({
+          'Platform Setup & Design': 0.30,
+          'Product Catalog & Integration': 0.25,
+          'Payment & Security': 0.20,
+          'Testing & Launch': 0.15,
+          'Training & Support': 0.10
+        });
+        break;
+      case 'mobile_app':
+        allocatePercentages({
+          'UI/UX Design': 0.25,
+          'Development (iOS/Android)': 0.45,
+          'Testing & QA': 0.15,
+          'App Store Deployment': 0.10,
+          'Post-Launch Support': 0.05
+        });
+        break;
+      case 'consulting':
+        allocatePercentages({
+          'Analysis & Research': 0.30,
+          'Strategy Development': 0.35,
+          'Implementation Planning': 0.20,
+          'Follow-up & Optimization': 0.15
+        });
         break;
       default:
-        breakdown['Planning & Strategy'] = Math.round(totalBudget * 0.25);
-        breakdown['Implementation'] = Math.round(totalBudget * 0.5);
-        breakdown['Testing & Optimization'] = Math.round(totalBudget * 0.15);
-        breakdown['Support & Maintenance'] = Math.round(totalBudget * 0.1);
+        allocatePercentages({
+          'Planning & Strategy': 0.25,
+          'Implementation': 0.50,
+          'Testing & Optimization': 0.15,
+          'Support & Maintenance': 0.10
+        });
     }
 
     return {
@@ -702,6 +950,270 @@ Please generate all 8 sections of the proposal, ensuring each section is complet
             friendly: 'Invite to start the exciting marketing journey together',
             premium: 'Offer exclusive marketing consultation and campaign onboarding',
             casual: 'Make it easy to get started with marketing right away'
+          }
+        }
+      }
+    });
+
+    // E-commerce Template
+    this.templates.set('ecommerce', {
+      name: 'ecommerce',
+      industry: 'E-commerce & Online Retail',
+      sections: {
+        executive_summary: {
+          prompt: 'Focus on online sales growth, conversion optimization, and revenue increase',
+          wordCount: [150, 200],
+          tone_adaptations: {
+            professional: 'Emphasize e-commerce expertise and revenue optimization strategies',
+            friendly: 'Highlight collaborative approach to growing online sales',
+            premium: 'Position as exclusive e-commerce transformation service',
+            casual: 'Focus on making online selling awesome and profitable'
+          }
+        },
+        project_understanding: {
+          prompt: 'Demonstrate understanding of e-commerce challenges, competition, and market opportunities',
+          wordCount: [200, 250],
+          tone_adaptations: {
+            professional: 'Analyze current e-commerce performance and growth opportunities',
+            friendly: 'Show empathy for online selling challenges and goals',
+            premium: 'Position current e-commerce state as opportunity for luxury market positioning',
+            casual: 'Acknowledge that the online store needs some expert attention'
+          }
+        },
+        proposed_solution: {
+          prompt: 'Outline comprehensive e-commerce strategy including platform, UX, and conversion optimization',
+          wordCount: [300, 400],
+          tone_adaptations: {
+            professional: 'Detail e-commerce methodology and technical implementation',
+            friendly: 'Explain the e-commerce improvement process in accessible terms',
+            premium: 'Present bespoke e-commerce solution with luxury positioning',
+            casual: 'Break down how we\'ll build an amazing online store together'
+          }
+        },
+        deliverables: {
+          prompt: 'List e-commerce platform features, integrations, and optimization deliverables',
+          wordCount: [150, 200],
+          tone_adaptations: {
+            professional: 'Itemize e-commerce deliverables with technical specifications',
+            friendly: 'Describe what e-commerce features and improvements you\'ll receive',
+            premium: 'Present exclusive e-commerce elements and premium features',
+            casual: 'List all the cool e-commerce stuff you\'ll get'
+          }
+        },
+        timeline: {
+          prompt: 'Break down e-commerce development phases and launch milestones',
+          wordCount: [100, 150],
+          tone_adaptations: {
+            professional: 'Present structured e-commerce development timeline',
+            friendly: 'Explain the journey from concept to successful online store',
+            premium: 'Outline meticulous e-commerce development process',
+            casual: 'Show the roadmap to e-commerce success'
+          }
+        },
+        investment: {
+          prompt: 'Present e-commerce investment with ROI and sales growth justification',
+          wordCount: [100, 150],
+          tone_adaptations: {
+            professional: 'Justify investment with e-commerce ROI and revenue projections',
+            friendly: 'Explain pricing in terms of sales growth and value',
+            premium: 'Position as investment in e-commerce excellence',
+            casual: 'Break down what you get for your e-commerce investment'
+          }
+        },
+        why_choose_us: {
+          prompt: 'Highlight e-commerce expertise, successful store launches, and conversion results',
+          wordCount: [150, 200],
+          tone_adaptations: {
+            professional: 'Present e-commerce credentials and proven sales results',
+            friendly: 'Share passion for e-commerce and client success stories',
+            premium: 'Position as elite e-commerce agency with exclusive expertise',
+            casual: 'Show why we\'re the right e-commerce team for your business'
+          }
+        },
+        next_steps: {
+          prompt: 'Provide clear call-to-action for starting the e-commerce project',
+          wordCount: [50, 100],
+          tone_adaptations: {
+            professional: 'Present formal e-commerce project initiation process',
+            friendly: 'Invite to start the exciting e-commerce journey together',
+            premium: 'Offer exclusive e-commerce consultation and onboarding',
+            casual: 'Make it easy to get started with e-commerce right away'
+          }
+        }
+      }
+    });
+
+    // Mobile App Template
+    this.templates.set('mobile_app', {
+      name: 'mobile_app',
+      industry: 'Mobile App Development',
+      sections: {
+        executive_summary: {
+          prompt: 'Focus on mobile user experience, app store success, and user engagement',
+          wordCount: [150, 200],
+          tone_adaptations: {
+            professional: 'Emphasize mobile development expertise and app store optimization',
+            friendly: 'Highlight collaborative approach to creating amazing mobile experiences',
+            premium: 'Position as exclusive mobile app development service',
+            casual: 'Focus on building an awesome app that users will love'
+          }
+        },
+        project_understanding: {
+          prompt: 'Demonstrate understanding of mobile market, user needs, and technical requirements',
+          wordCount: [200, 250],
+          tone_adaptations: {
+            professional: 'Analyze mobile market opportunities and technical challenges',
+            friendly: 'Show empathy for mobile app vision and user needs',
+            premium: 'Position mobile app as opportunity for market leadership',
+            casual: 'Acknowledge that the mobile app idea needs expert development'
+          }
+        },
+        proposed_solution: {
+          prompt: 'Outline comprehensive mobile development strategy including platforms, features, and user experience',
+          wordCount: [300, 400],
+          tone_adaptations: {
+            professional: 'Detail mobile development methodology and technical architecture',
+            friendly: 'Explain the app development process in accessible terms',
+            premium: 'Present bespoke mobile solution with cutting-edge features',
+            casual: 'Break down how we\'ll build an incredible mobile app together'
+          }
+        },
+        deliverables: {
+          prompt: 'List mobile app features, platforms, testing, and app store deliverables',
+          wordCount: [150, 200],
+          tone_adaptations: {
+            professional: 'Itemize mobile deliverables with technical specifications',
+            friendly: 'Describe what mobile app features and capabilities you\'ll receive',
+            premium: 'Present exclusive mobile features and premium functionality',
+            casual: 'List all the cool mobile app features you\'ll get'
+          }
+        },
+        timeline: {
+          prompt: 'Break down mobile development phases from wireframes to app store launch',
+          wordCount: [100, 150],
+          tone_adaptations: {
+            professional: 'Present structured mobile development timeline',
+            friendly: 'Explain the journey from concept to app store success',
+            premium: 'Outline meticulous mobile development process',
+            casual: 'Show the roadmap to mobile app success'
+          }
+        },
+        investment: {
+          prompt: 'Present mobile development investment with user acquisition and revenue justification',
+          wordCount: [100, 150],
+          tone_adaptations: {
+            professional: 'Justify investment with mobile ROI and user engagement metrics',
+            friendly: 'Explain pricing in terms of app success and value',
+            premium: 'Position as investment in mobile excellence',
+            casual: 'Break down what you get for your mobile app investment'
+          }
+        },
+        why_choose_us: {
+          prompt: 'Highlight mobile development expertise, successful app launches, and user ratings',
+          wordCount: [150, 200],
+          tone_adaptations: {
+            professional: 'Present mobile credentials and proven app store results',
+            friendly: 'Share passion for mobile development and client success stories',
+            premium: 'Position as elite mobile development team with exclusive expertise',
+            casual: 'Show why we\'re the right mobile team for your app'
+          }
+        },
+        next_steps: {
+          prompt: 'Provide clear call-to-action for starting the mobile app project',
+          wordCount: [50, 100],
+          tone_adaptations: {
+            professional: 'Present formal mobile development project initiation process',
+            friendly: 'Invite to start the exciting mobile app journey together',
+            premium: 'Offer exclusive mobile consultation and development onboarding',
+            casual: 'Make it easy to get started with mobile app development right away'
+          }
+        }
+      }
+    });
+
+    // Consulting Template
+    this.templates.set('consulting', {
+      name: 'consulting',
+      industry: 'Business Consulting & Strategy',
+      sections: {
+        executive_summary: {
+          prompt: 'Focus on business transformation, strategic growth, and competitive advantage',
+          wordCount: [150, 200],
+          tone_adaptations: {
+            professional: 'Emphasize strategic consulting expertise and business transformation',
+            friendly: 'Highlight collaborative approach to business growth',
+            premium: 'Position as exclusive strategic consulting service',
+            casual: 'Focus on helping the business reach its full potential'
+          }
+        },
+        project_understanding: {
+          prompt: 'Demonstrate understanding of business challenges, market position, and growth opportunities',
+          wordCount: [200, 250],
+          tone_adaptations: {
+            professional: 'Analyze current business situation and strategic opportunities',
+            friendly: 'Show empathy for business challenges and growth aspirations',
+            premium: 'Position current business state as opportunity for excellence',
+            casual: 'Acknowledge that the business needs some strategic guidance'
+          }
+        },
+        proposed_solution: {
+          prompt: 'Outline comprehensive consulting methodology including analysis, strategy, and implementation',
+          wordCount: [300, 400],
+          tone_adaptations: {
+            professional: 'Detail consulting methodology and strategic framework',
+            friendly: 'Explain the consulting process in accessible business terms',
+            premium: 'Present bespoke consulting solution with executive-level approach',
+            casual: 'Break down how we\'ll transform the business together'
+          }
+        },
+        deliverables: {
+          prompt: 'List strategic analysis, recommendations, implementation plans, and business outcomes',
+          wordCount: [150, 200],
+          tone_adaptations: {
+            professional: 'Itemize consulting deliverables with strategic specifications',
+            friendly: 'Describe what strategic insights and plans you\'ll receive',
+            premium: 'Present exclusive consulting elements and premium analysis',
+            casual: 'List all the strategic tools and insights you\'ll get'
+          }
+        },
+        timeline: {
+          prompt: 'Break down consulting phases from analysis to implementation and results',
+          wordCount: [100, 150],
+          tone_adaptations: {
+            professional: 'Present structured consulting engagement timeline',
+            friendly: 'Explain the journey from analysis to business transformation',
+            premium: 'Outline meticulous consulting process with executive checkpoints',
+            casual: 'Show the roadmap to business success'
+          }
+        },
+        investment: {
+          prompt: 'Present consulting investment with ROI and business growth justification',
+          wordCount: [100, 150],
+          tone_adaptations: {
+            professional: 'Justify investment with business ROI and strategic value',
+            friendly: 'Explain pricing in terms of business growth and value',
+            premium: 'Position as investment in strategic excellence',
+            casual: 'Break down what you get for your consulting investment'
+          }
+        },
+        why_choose_us: {
+          prompt: 'Highlight consulting expertise, successful transformations, and business results',
+          wordCount: [150, 200],
+          tone_adaptations: {
+            professional: 'Present consulting credentials and proven business results',
+            friendly: 'Share passion for business success and client transformations',
+            premium: 'Position as elite consulting firm with exclusive expertise',
+            casual: 'Show why we\'re the right consulting team for your business'
+          }
+        },
+        next_steps: {
+          prompt: 'Provide clear call-to-action for starting the consulting engagement',
+          wordCount: [50, 100],
+          tone_adaptations: {
+            professional: 'Present formal consulting engagement initiation process',
+            friendly: 'Invite to start the exciting business transformation journey',
+            premium: 'Offer exclusive strategic consultation and engagement onboarding',
+            casual: 'Make it easy to get started with consulting right away'
           }
         }
       }

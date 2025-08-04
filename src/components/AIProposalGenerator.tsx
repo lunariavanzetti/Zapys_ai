@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Wand2, Settings, Languages, Palette, FileText, Loader2, Check, AlertCircle } from 'lucide-react';
-import { openaiService } from '../services/openaiService';
-import { OpenAIProposalResponse } from '../services/openaiService';
+import { Wand2, Settings, Languages, Palette, FileText, Loader2, Check, AlertCircle, Download, Copy } from 'lucide-react';
+import { aiProposalGenerator, ProposalGenerationRequest, ProposalGenerationResponse } from '../services/aiProposalGenerator';
+import { availableTemplates } from '../services/proposalGeneratorDemo';
+import { proposalExportService, ExportOptions } from '../services/proposalExportService';
 
 interface AIProposalGeneratorProps {
-  onProposalGenerated?: (proposal: OpenAIProposalResponse) => void;
+  onProposalGenerated?: (proposal: ProposalGenerationResponse) => void;
   initialData?: {
     title?: string;
     clientName?: string;
@@ -35,9 +36,9 @@ export default function AIProposalGenerator({ onProposalGenerated, initialData }
 
   // Preferences state
   const [preferences, setPreferences] = useState({
-    tone: 'professional' as const,
-    language: 'en' as const,
-    templateType: 'custom' as const,
+    tone: 'professional' as 'professional' | 'friendly' | 'premium' | 'casual',
+    language: 'en' as 'en' | 'uk' | 'ru' | 'pl',
+    templateType: 'web_design' as 'web_design' | 'development' | 'branding' | 'marketing' | 'ecommerce' | 'mobile_app' | 'consulting' | 'custom',
     brandVoice: '',
     customInstructions: ''
   });
@@ -50,16 +51,19 @@ export default function AIProposalGenerator({ onProposalGenerated, initialData }
   const [currentStep, setCurrentStep] = useState<'form' | 'generating' | 'result'>('form');
 
   // Service data
-  const [templates, setTemplates] = useState<any[]>([]);
-  const [languages, setLanguages] = useState<any[]>([]);
-  const [tones, setTones] = useState<any[]>([]);
-
-  useEffect(() => {
-    // Load service data
-    setTemplates(aiService.getAvailableTemplates());
-    setLanguages(aiService.getSupportedLanguages());
-    setTones(aiService.getAvailableTones());
-  }, []);
+  const templates = availableTemplates;
+  const languages = [
+    { code: 'en', name: 'English' },
+    { code: 'uk', name: 'Ukrainian' },
+    { code: 'ru', name: 'Russian' },
+    { code: 'pl', name: 'Polish' }
+  ];
+  const tones = [
+    { id: 'professional', name: 'Professional' },
+    { id: 'friendly', name: 'Friendly' },
+    { id: 'premium', name: 'Premium' },
+    { id: 'casual', name: 'Casual' }
+  ];
 
   const handleInputChange = (field: string, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -74,24 +78,22 @@ export default function AIProposalGenerator({ onProposalGenerated, initialData }
   };
 
   const validateForm = () => {
-    const validation = aiService.validateProposalRequest({
-      projectData: {
-        title: formData.title,
-        clientName: formData.clientName,
-        clientEmail: formData.clientEmail,
-        clientCompany: formData.clientCompany,
-        description: formData.description,
-        estimatedBudget: formData.estimatedBudget ? Number(formData.estimatedBudget) : undefined,
-        timeline: formData.timeline ? Number(formData.timeline) : undefined,
-        industry: formData.industry,
-        deliverables: formData.deliverables ? formData.deliverables.split('\n').filter(d => d.trim()) : undefined
-      },
-      userPreferences: preferences,
-      templateType: preferences.templateType as any
-    });
+    const newErrors: string[] = [];
+    
+    if (!formData.title.trim()) {
+      newErrors.push('Project title is required');
+    }
+    
+    if (!formData.clientName.trim()) {
+      newErrors.push('Client name is required');
+    }
+    
+    if (!formData.description.trim()) {
+      newErrors.push('Project description is required');
+    }
 
-    setErrors(validation.errors);
-    return validation.isValid;
+    setErrors(newErrors);
+    return newErrors.length === 0;
   };
 
   const handleGenerate = async () => {
@@ -103,8 +105,8 @@ export default function AIProposalGenerator({ onProposalGenerated, initialData }
     setCurrentStep('generating');
 
     try {
-      const response = await aiService.generateProposalFromProject(
-        {
+      const request: ProposalGenerationRequest = {
+        projectData: {
           title: formData.title,
           clientName: formData.clientName,
           clientEmail: formData.clientEmail,
@@ -115,16 +117,28 @@ export default function AIProposalGenerator({ onProposalGenerated, initialData }
           industry: formData.industry,
           deliverables: formData.deliverables ? formData.deliverables.split('\n').filter(d => d.trim()) : undefined
         },
-        preferences
-      );
+        userPreferences: {
+          tone: preferences.tone,
+          language: preferences.language,
+          brandVoice: preferences.brandVoice || undefined,
+          customInstructions: preferences.customInstructions || undefined
+        },
+        templateType: preferences.templateType
+      };
 
-      setGeneratedProposal(response);
-      setCurrentStep('result');
-      onProposalGenerated?.(response);
+      const response = await aiProposalGenerator.generateProposal(request);
+
+      if (response.success) {
+        setGeneratedProposal(response);
+        setCurrentStep('result');
+        onProposalGenerated?.(response);
+      } else {
+        throw new Error(response.error || 'Failed to generate proposal');
+      }
 
     } catch (error) {
       console.error('Error generating proposal:', error);
-      setErrors(['Failed to generate proposal. Please try again.']);
+      setErrors([error instanceof Error ? error.message : 'Failed to generate proposal. Please try again.']);
       setCurrentStep('form');
     } finally {
       setIsGenerating(false);
@@ -135,6 +149,36 @@ export default function AIProposalGenerator({ onProposalGenerated, initialData }
     setCurrentStep('form');
     setGeneratedProposal(null);
     setErrors([]);
+  };
+
+  const handleExport = async (format: 'pdf' | 'html' | 'docx' | 'txt' | 'json') => {
+    if (!generatedProposal) return;
+
+    try {
+      const exportOptions: ExportOptions = {
+        format,
+        includeMetadata: true,
+        includePricing: true,
+        customStyling: {
+          primaryColor: '#7C3AED',
+          fontFamily: 'Arial, sans-serif'
+        },
+        companyInfo: {
+          name: 'Your Company Name', // This could be made configurable
+          email: 'contact@yourcompany.com',
+          website: 'www.yourcompany.com'
+        }
+      };
+
+      await proposalExportService.exportProposal(
+        generatedProposal,
+        exportOptions,
+        formData.clientName || 'Client'
+      );
+    } catch (error) {
+      console.error('Export failed:', error);
+      setErrors(['Failed to export proposal. Please try again.']);
+    }
   };
 
   if (currentStep === 'generating') {
@@ -255,24 +299,66 @@ export default function AIProposalGenerator({ onProposalGenerated, initialData }
                 ))}
               </div>
 
-              {/* Actions */}
-              <div className="flex space-x-4 mt-8 pt-6 border-t border-gray-200">
-                <button
-                  onClick={() => {
-                    // Copy to clipboard or download functionality would go here
-                    navigator.clipboard.writeText(JSON.stringify(generatedProposal.content.sections, null, 2));
-                  }}
-                  className="flex-1 bg-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-700 transition-colors flex items-center justify-center space-x-2"
-                >
-                  <FileText className="w-5 h-5" />
-                  <span>Copy Proposal</span>
-                </button>
-                <button
-                  onClick={handleStartOver}
-                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-                >
-                  Generate New
-                </button>
+              {/* Export Actions */}
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <h4 className="font-semibold text-gray-900 mb-4">Export Options</h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                  <button
+                    onClick={() => handleExport('pdf')}
+                    className="bg-red-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center justify-center space-x-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>PDF</span>
+                  </button>
+                  <button
+                    onClick={() => handleExport('html')}
+                    className="bg-blue-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>HTML</span>
+                  </button>
+                  <button
+                    onClick={() => handleExport('docx')}
+                    className="bg-indigo-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center space-x-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Word</span>
+                  </button>
+                  <button
+                    onClick={() => handleExport('txt')}
+                    className="bg-gray-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors flex items-center justify-center space-x-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Text</span>
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    onClick={() => {
+                      const proposalText = Object.entries(generatedProposal.content.sections)
+                        .map(([key, content]) => `${key.replace(/_/g, ' ').toUpperCase()}:\n${content}\n`)
+                        .join('\n');
+                      navigator.clipboard.writeText(proposalText);
+                    }}
+                    className="bg-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-700 transition-colors flex items-center justify-center space-x-2"
+                  >
+                    <Copy className="w-5 h-5" />
+                    <span>Copy Text</span>
+                  </button>
+                  <button
+                    onClick={() => handleExport('json')}
+                    className="bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center space-x-2"
+                  >
+                    <Download className="w-5 h-5" />
+                    <span>Download JSON</span>
+                  </button>
+                  <button
+                    onClick={handleStartOver}
+                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                  >
+                    Generate New
+                  </button>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -469,7 +555,7 @@ export default function AIProposalGenerator({ onProposalGenerated, initialData }
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                       >
                         {templates.map((template) => (
-                          <option key={template.id} value={template.id}>
+                          <option key={template.key} value={template.key}>
                             {template.name}
                           </option>
                         ))}

@@ -1,0 +1,19 @@
+title,clientName,clientEmail,clientCompany,description,estimatedBudget,timeline,industry,priority,status,platform,deadline,deliverables,tags
+Healthcare Mobile App,Dr. Sarah Williams,sarah.williams@medtech.com,MedTech Solutions,"Develop a mobile application for patient management and appointment scheduling.
+    The app should include secure messaging, prescription tracking, and integration with existing EHR systems.
+    
+    Deliverables:
+    - iOS and Android mobile applications
+    - Backend API development
+    - EHR system integration
+    - Security compliance (HIPAA)
+    - User training materials
+    
+    Budget: $45,000
+    Timeline: 16 weeks
+    Priority: High
+    Status: Discovery
+    Platform: React Native
+    Deadline: 2025-08-15
+    
+    #healthcare #mobile #hipaa #react-native",45000,16,technology,medium,discovery,React,2025-08-15,iOS and Android mobile applications; Backend API development; EHR system integration; Security compliance (HIPAA); User training materials,react; backend; mobile; hipaa; healthcare; api

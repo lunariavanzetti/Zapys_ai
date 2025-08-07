@@ -57,7 +57,7 @@ export default function Navbar() {
             <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600">
               <Zap className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-white">Zapys AI</span>
+            <span className="text-xl font-bold text-brutalist-black dark:text-white">Zapys AI</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -70,8 +70,8 @@ export default function Navbar() {
                   to={item.href}
                   className={`flex items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
                     isActive(item.href)
-                      ? 'bg-white/20 text-white'
-                      : 'text-white/70 hover:text-white hover:bg-white/10'
+                      ? 'bg-white/20 text-white dark:text-white'
+                      : 'text-brutalist-black dark:text-white/70 hover:text-brutalist-black dark:hover:text-white hover:bg-white/10'
                   }`}
                 >
                   <Icon className="h-4 w-4 mr-2" />
@@ -155,8 +155,8 @@ export default function Navbar() {
                     onClick={() => setIsOpen(false)}
                     className={`flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
                       isActive(item.href)
-                        ? 'bg-white/20 text-white'
-                        : 'text-white/70 hover:text-white hover:bg-white/10'
+                        ? 'bg-white/20 text-white dark:text-white'
+                        : 'text-brutalist-black dark:text-white/70 hover:text-brutalist-black dark:hover:text-white hover:bg-white/10'
                     }`}
                   >
                     <Icon className="h-4 w-4 mr-3" />
@@ -168,13 +168,13 @@ export default function Navbar() {
               <hr className="border-white/20 my-3" />
               
               <div className="flex items-center justify-between px-4 py-2">
-                <span className="text-sm text-white/70">Theme</span>
+                <span className="text-sm text-brutalist-black dark:text-white/70">Theme</span>
                 <BrutalistThemeToggle />
               </div>
               
               <button
                 onClick={handleSignOut}
-                className="flex items-center w-full px-4 py-3 text-sm text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
+                className="flex items-center w-full px-4 py-3 text-sm text-brutalist-black dark:text-white/70 hover:text-brutalist-black dark:hover:text-white hover:bg-white/10 rounded-xl transition-colors"
               >
                 <LogOut className="h-4 w-4 mr-3" />
                 Sign Out

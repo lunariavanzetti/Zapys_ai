@@ -225,7 +225,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
-                <p className="text-2xl text-brutalist-gray font-black uppercase tracking-widest max-w-3xl leading-tight">
+                <p className="text-2xl text-brutalist-black dark:text-brutalist-white font-black uppercase tracking-widest max-w-3xl leading-tight">
                   YOUR ULTRA-MODERN BRUTAL WORKSPACE IS READY FOR WORLD-CLASS PROPOSAL GENERATION
                 </p>
               </div>
@@ -273,7 +273,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
-                <div className="text-lg font-black text-brutalist-gray uppercase tracking-widest mb-4">
+                <div className="text-lg font-black text-brutalist-black dark:text-brutalist-white uppercase tracking-widest mb-4">
                   TOTAL PROPOSALS
                 </div>
                 <div className="h-2 bg-electric-500 w-full shadow-brutal"></div>
@@ -295,7 +295,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
-                <div className="text-lg font-black text-brutalist-gray uppercase tracking-widest mb-4">
+                <div className="text-lg font-black text-brutalist-black dark:text-brutalist-white uppercase tracking-widest mb-4">
                   TOTAL VIEWS
                 </div>
                 <div className="h-2 bg-electric-500 w-full shadow-brutal"></div>
@@ -316,7 +316,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
-                <div className="text-lg font-black text-brutalist-gray uppercase tracking-widest mb-4">
+                <div className="text-lg font-black text-brutalist-black dark:text-brutalist-white uppercase tracking-widest mb-4">
                   SUCCESS RATE
                 </div>
                 <div className="h-2 bg-electric-500 w-full shadow-brutal"></div>
@@ -337,7 +337,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
-                <div className="text-lg font-black text-brutalist-gray uppercase tracking-widest mb-4">
+                <div className="text-lg font-black text-brutalist-black dark:text-brutalist-white uppercase tracking-widest mb-4">
                   REVENUE EARNED
                 </div>
                 <div className="h-2 bg-electric-500 w-full shadow-brutal"></div>
@@ -377,7 +377,7 @@ export default function Dashboard() {
                     <h3 className="text-2xl font-black text-brutalist-black dark:text-brutalist-white mb-4 uppercase">
                       NO PROPOSALS YET
                     </h3>
-                    <p className="text-brutalist-gray font-bold uppercase tracking-wider mb-8">
+                    <p className="text-brutalist-black dark:text-brutalist-white font-bold uppercase tracking-wider mb-8">
                       START YOUR JOURNEY WITH YOUR FIRST BRUTAL PROPOSAL
                     </p>
                     <Link to="/create">
@@ -407,7 +407,7 @@ export default function Dashboard() {
                                 {proposal.title}
                               </h3>
                               <div className="flex items-center space-x-4 mt-1">
-                                <span className="text-sm font-bold text-brutalist-gray uppercase tracking-wider">
+                                <span className="text-sm font-bold text-brutalist-black dark:text-brutalist-white uppercase tracking-wider">
                                   {proposal.client_name}
                                 </span>
                                 <span className="text-xs font-bold text-electric-500 uppercase tracking-widest">
@@ -422,7 +422,7 @@ export default function Dashboard() {
                               <div className="text-lg font-black text-brutalist-black dark:text-brutalist-white">
                                 {proposal.pricing_total ? formatCurrency(proposal.pricing_total) : '—'}
                               </div>
-                              <div className="text-xs font-bold text-brutalist-gray uppercase tracking-wider">
+                              <div className="text-xs font-bold text-brutalist-black dark:text-brutalist-white uppercase tracking-wider">
                                 {proposal.total_views} VIEWS
                               </div>
                             </div>
@@ -500,7 +500,7 @@ export default function Dashboard() {
                 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-brutalist-gray uppercase tracking-wider">
+                    <span className="text-sm font-bold text-brutalist-black dark:text-brutalist-white uppercase tracking-wider">
                       CURRENT PLAN
                     </span>
                     <div className="brutal-card px-3 py-1">
@@ -513,7 +513,7 @@ export default function Dashboard() {
                   {(userProfile?.subscription_tier === 'free' || !userProfile) && (
                     <>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-bold text-brutalist-gray uppercase tracking-wider">
+                        <span className="text-sm font-bold text-brutalist-black dark:text-brutalist-white uppercase tracking-wider">
                           PROPOSALS USED
                         </span>
                         <span className="text-sm font-black text-brutalist-black dark:text-brutalist-white">
@@ -551,7 +551,7 @@ export default function Dashboard() {
                 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-brutalist-gray uppercase tracking-wider">
+                    <span className="text-sm font-bold text-brutalist-black dark:text-brutalist-white uppercase tracking-wider">
                       PROPOSALS SENT
                     </span>
                     <span className="text-lg font-black text-electric-500">
@@ -560,7 +560,7 @@ export default function Dashboard() {
                   </div>
                   
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-brutalist-gray uppercase tracking-wider">
+                    <span className="text-sm font-bold text-brutalist-black dark:text-brutalist-white uppercase tracking-wider">
                       RESPONSE RATE
                     </span>
                     <span className="text-lg font-black text-electric-500">
@@ -569,7 +569,7 @@ export default function Dashboard() {
                   </div>
                   
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-brutalist-gray uppercase tracking-wider">
+                    <span className="text-sm font-bold text-brutalist-black dark:text-brutalist-white uppercase tracking-wider">
                       ACTIVE PROPOSALS
                     </span>
                     <span className="text-lg font-black text-electric-500">

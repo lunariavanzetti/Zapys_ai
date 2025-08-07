@@ -98,52 +98,6 @@ export default function AuthCallback() {
         setStatus('error')
         setTimeout(() => navigate('/auth?error=oauth_failed'), 2000)
         return
-        
-        // Fallback to getSession with timeout
-        console.log('🔥 AUTH CALLBACK: Falling back to getSession() with timeout...')
-        const sessionPromise = supabase.auth.getSession()
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Session timeout')), 5000)
-        )
-        
-        const { data: { session }, error: sessionError } = await Promise.race([
-          sessionPromise,
-          timeoutPromise
-        ]) as any
-        
-        console.log('🔥 AUTH CALLBACK: Session result:', { 
-          hasSession: !!session, 
-          error: sessionError,
-          userEmail: session?.user?.email,
-          userId: session?.user?.id
-        })
-        
-        if (sessionError) {
-          console.error('🔥 AUTH CALLBACK: Session error:', sessionError)
-          setStatus('error')
-          setTimeout(() => navigate('/auth?error=session_failed'), 2000)
-          return
-        }
-
-        if (session) {
-          console.log('✅ AUTH CALLBACK: Authentication successful:', session.user.email)
-          
-          // Check if this is a new user (account creation) or returning user (sign in)
-          const userCreatedAt = new Date(session.user.created_at)
-          const now = new Date()
-          const isNewAccount = (now.getTime() - userCreatedAt.getTime()) < 60000 // 1 minute
-          
-          console.log('🔥 AUTH CALLBACK: User created at:', userCreatedAt)
-          console.log('🔥 AUTH CALLBACK: Is new user:', isNewAccount)
-          
-          setIsNewUser(isNewAccount)
-          setStatus('success')
-          setTimeout(() => navigate('/dashboard'), 1000)
-        } else {
-          console.log('❌ AUTH CALLBACK: No session found after OAuth')
-          setStatus('error')
-          setTimeout(() => navigate('/auth?error=no_session'), 2000)
-        }
       } catch (err) {
         console.error('🔥 AUTH CALLBACK: Unexpected error:', err)
         setStatus('error')

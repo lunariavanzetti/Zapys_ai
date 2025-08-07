@@ -1,8 +1,23 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import { ArrowRight, Zap, BarChart3, Globe, Users, Target, DollarSign, FileText, TrendingUp } from 'lucide-react'
 import BrutalistThemeToggle from '../components/BrutalistThemeToggle'
 
 export default function LandingPage() {
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  // Check if this is an auth callback and redirect accordingly
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search)
+    const code = searchParams.get('code')
+    const accessToken = searchParams.get('access_token')
+    
+    if (code || accessToken) {
+      console.log('Auth callback detected on landing page, redirecting to /auth/callback')
+      navigate('/auth/callback' + location.search + location.hash, { replace: true })
+    }
+  }, [location, navigate])
   const features = [
     {
       icon: Zap,

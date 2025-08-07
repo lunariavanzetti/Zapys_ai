@@ -26,12 +26,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Force stop loading after 8 seconds max for better stability
-    const maxLoadingTimeout = setTimeout(() => {
-      console.log('🚨 FORCE STOPPING AUTH LOADING - 8 second timeout')
-      setLoading(false)
-    }, 8000)
-
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
@@ -65,50 +59,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     })
 
-    return () => {
-      subscription.unsubscribe()
-      clearTimeout(maxLoadingTimeout)
-    }
+    return () => subscription.unsubscribe()
   }, [])
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      console.log('Fetching user profile for:', userId)
-      
-      // Add timeout to prevent hanging
-      const profileTimeout = setTimeout(() => {
-        console.log('⏰ Profile fetch timeout - proceeding without profile')
-        setUserProfile(null)
-        setLoading(false)
-      }, 3000)
-
       const { data, error } = await supabase
         .from('users')
         .select('*')
         .eq('id', userId)
         .single()
-      
-      clearTimeout(profileTimeout)
 
       if (error) {
-        console.log('Error fetching user profile:', error)
         // If user doesn't exist in our users table, create them
-        if (error.code === 'PGRST116' || error.message?.includes('No rows found')) {
-          console.log('User not found, creating profile...')
+        if (error.code === 'PGRST116') {
           await createUserProfile(userId)
           return
         }
-        console.error('Database error:', error)
-        // Don't throw error, just continue without profile
-        setUserProfile(null)
-      } else {
-        console.log('User profile loaded:', data)
-        setUserProfile(data)
+        throw error
       }
+
+      setUserProfile(data)
     } catch (error) {
       console.error('Error fetching user profile:', error)
-      // Don't show error to user for profile issues
-      setUserProfile(null)
+      toast.error('Failed to load user profile')
     } finally {
       setLoading(false)
     }
@@ -116,7 +90,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const createUserProfile = async (userId: string) => {
     try {
-      console.log('Creating user profile for:', userId)
       const { data: authUser } = await supabase.auth.getUser()
       if (!authUser.user) throw new Error('No authenticated user')
 
@@ -130,25 +103,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         onboarding_completed: false,
       }
 
-      console.log('Inserting profile data:', profileData)
       const { data, error } = await supabase
         .from('users')
         .insert(profileData)
         .select()
         .single()
 
-      if (error) {
-        console.error('Error inserting user profile:', error)
-        // If table doesn't exist or permission issue, just continue without profile
-        setUserProfile(null)
-      } else {
-        console.log('User profile created:', data)
-        setUserProfile(data)
-      }
+      if (error) throw error
+      
+      setUserProfile(data)
     } catch (error) {
       console.error('Error creating user profile:', error)
-      // Don't show error to user, just continue without profile
-      setUserProfile(null)
+      toast.error('Failed to create user profile')
     } finally {
       setLoading(false)
     }
@@ -163,15 +129,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signUp = async (email: string, password: string, fullName?: string) => {
-    const redirectUrl = import.meta.env.VITE_APP_URL 
-      ? `${import.meta.env.VITE_APP_URL}/auth/callback`
-      : `${window.location.origin}/auth/callback`
-      
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectUrl,
         data: {
           full_name: fullName,
         },
@@ -181,28 +142,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signInWithGoogle = async () => {
-    const redirectUrl = import.meta.env.VITE_APP_URL 
-      ? `${import.meta.env.VITE_APP_URL}/auth/callback`
-      : `${window.location.origin}/auth/callback`
-    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: redirectUrl,
+        redirectTo: `${window.location.origin}/dashboard`,
       },
     })
     return { error }
   }
 
   const signInWithApple = async () => {
-    const redirectUrl = import.meta.env.VITE_APP_URL 
-      ? `${import.meta.env.VITE_APP_URL}/auth/callback`
-      : `${window.location.origin}/auth/callback`
-    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'apple',
       options: {
-        redirectTo: redirectUrl,
+        redirectTo: `${window.location.origin}/dashboard`,
       },
     })
     return { error }

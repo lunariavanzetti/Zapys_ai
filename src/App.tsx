@@ -12,6 +12,10 @@ import Analytics from './pages/Analytics'
 import Settings from './pages/Settings'
 import AuthPage from './pages/AuthPage'
 import AuthCallback from './pages/AuthCallback'
+import { Agent3Test } from './pages/Agent3Test'
+import { Agent1Test } from './pages/Agent1Test'
+import TestRoute from './pages/TestRoute'
+import SimpleAgentTest from './pages/SimpleAgentTest'
 
 function App() {
   return (
@@ -26,9 +30,19 @@ function App() {
               <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/proposal/:slug" element={<ProposalView />} />
               
+              {/* Agent test routes (simplified auth) */}
+              <Route path="/test/route" element={<AppLayout><TestRoute /></AppLayout>} />
+              <Route path="/test/agents" element={<AppLayout><SimpleAgentTest /></AppLayout>} />
+              <Route path="/test/agent3" element={<AppLayout><Agent3Test /></AppLayout>} />
+              <Route path="/test/agent1" element={<AppLayout><Agent1Test /></AppLayout>} />
+              
               {/* Protected routes */}
               <Route element={<ProtectedRoute />}>
-                <Route element={<AppLayout />} />
+                <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />
+                <Route path="/create" element={<AppLayout><ProposalBuilder /></AppLayout>} />
+                <Route path="/proposal/:id/edit" element={<AppLayout><ProposalBuilder /></AppLayout>} />
+                <Route path="/analytics" element={<AppLayout><Analytics /></AppLayout>} />
+                <Route path="/settings" element={<AppLayout><Settings /></AppLayout>} />
               </Route>
             </Routes>
             
@@ -57,18 +71,12 @@ function App() {
 }
 
 // Layout component for protected routes
-function AppLayout() {
+function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Navbar />
       <main className="pt-16">
-        <Routes>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/create" element={<ProposalBuilder />} />
-          <Route path="/proposal/:id/edit" element={<ProposalBuilder />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
+        {children}
       </main>
     </>
   )

@@ -1,13 +1,10 @@
 import { useState } from 'react'
 import { Wand2, Loader2 } from 'lucide-react'
 import { openaiService, OpenAIProposalResponse } from '../services/openaiService'
-import GlassCard from './ui/GlassCard'
-import GlassButton from './ui/GlassButton'
-import GlassInput from './ui/GlassInput'
 import toast from 'react-hot-toast'
 
 interface SimpleAIGeneratorProps {
-  onProposalGenerated?: (proposal: OpenAIProposalResponse) => void
+  onProposalGenerated?: (proposal: OpenAIProposalResponse, formData: any) => void
 }
 
 export default function SimpleAIGenerator({ onProposalGenerated }: SimpleAIGeneratorProps) {
@@ -70,7 +67,7 @@ export default function SimpleAIGenerator({ onProposalGenerated }: SimpleAIGener
 
       if (response.success) {
         toast.success('Proposal generated successfully!')
-        onProposalGenerated?.(response)
+        onProposalGenerated?.(response, formData)
       } else {
         toast.error(response.error || 'Failed to generate proposal')
       }
@@ -83,94 +80,122 @@ export default function SimpleAIGenerator({ onProposalGenerated }: SimpleAIGener
   }
 
   return (
-    <GlassCard variant="brutalist" className="p-6">
-      <h2 className="text-2xl font-bold text-brutalist-black dark:text-brutalist-white mb-6 flex items-center uppercase tracking-wide">
-        <Wand2 className="h-6 w-6 mr-3" />
-        AI PROPOSAL GENERATOR
-      </h2>
+    <div className="brutal-card p-8 hover-lift electric-pulse">
+      <div className="flex items-center mb-8">
+        <div className="w-12 h-12 bg-electric-500 border-2 border-brutalist-black dark:border-brutalist-white shadow-brutal mr-4 flex items-center justify-center hover:animate-spin transition-transform">
+          <Wand2 className="h-6 w-6 text-brutalist-black" />
+        </div>
+        <h2 className="text-3xl font-black text-brutalist-black dark:text-brutalist-white uppercase tracking-wide">
+          AI PROPOSAL GENERATOR
+        </h2>
+      </div>
       
       <div className="space-y-6">
         {/* Basic Project Info */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <GlassInput
-            label="Project Title"
-            name="title"
-            value={formData.title}
-            onChange={handleInputChange}
-            placeholder="Website Redesign for Coffee Shop"
-            required
-            fullWidth
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="input-liquid">
+            <label className="block text-sm font-black text-brutalist-black dark:text-brutalist-white mb-3 uppercase tracking-wider">
+              PROJECT TITLE *
+            </label>
+            <input
+              name="title"
+              value={formData.title}
+              onChange={handleInputChange}
+              placeholder="Website Redesign for Coffee Shop"
+              required
+              className="block w-full px-4 py-4 border-4 border-brutalist-black dark:border-brutalist-white bg-brutalist-white dark:bg-brutalist-dark-gray text-brutalist-black dark:text-brutalist-white placeholder-brutalist-gray font-bold text-lg focus:border-electric-500 focus:shadow-brutal-lg transition-all duration-200 uppercase tracking-wide"
+            />
+          </div>
           
-          <GlassInput
-            label="Client Name"
-            name="clientName"
-            value={formData.clientName}
-            onChange={handleInputChange}
-            placeholder="John Doe"
-            required
-            fullWidth
-          />
+          <div className="input-liquid">
+            <label className="block text-sm font-black text-brutalist-black dark:text-brutalist-white mb-3 uppercase tracking-wider">
+              CLIENT NAME *
+            </label>
+            <input
+              name="clientName"
+              value={formData.clientName}
+              onChange={handleInputChange}
+              placeholder="John Doe"
+              required
+              className="block w-full px-4 py-4 border-4 border-brutalist-black dark:border-brutalist-white bg-brutalist-white dark:bg-brutalist-dark-gray text-brutalist-black dark:text-brutalist-white placeholder-brutalist-gray font-bold text-lg focus:border-electric-500 focus:shadow-brutal-lg transition-all duration-200 uppercase tracking-wide"
+            />
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <GlassInput
-            label="Client Email"
-            name="clientEmail"
-            type="email"
-            value={formData.clientEmail}
-            onChange={handleInputChange}
-            placeholder="john@example.com"
-            fullWidth
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="input-liquid">
+            <label className="block text-sm font-black text-brutalist-black dark:text-brutalist-white mb-3 uppercase tracking-wider">
+              CLIENT EMAIL
+            </label>
+            <input
+              name="clientEmail"
+              type="email"
+              value={formData.clientEmail}
+              onChange={handleInputChange}
+              placeholder="john@example.com"
+              className="block w-full px-4 py-4 border-4 border-brutalist-black dark:border-brutalist-white bg-brutalist-white dark:bg-brutalist-dark-gray text-brutalist-black dark:text-brutalist-white placeholder-brutalist-gray font-bold text-lg focus:border-electric-500 focus:shadow-brutal-lg transition-all duration-200"
+            />
+          </div>
           
-          <GlassInput
-            label="Company"
-            name="clientCompany"
-            value={formData.clientCompany}
-            onChange={handleInputChange}
-            placeholder="Coffee Shop Inc."
-            fullWidth
-          />
+          <div className="input-liquid">
+            <label className="block text-sm font-black text-brutalist-black dark:text-brutalist-white mb-3 uppercase tracking-wider">
+              COMPANY
+            </label>
+            <input
+              name="clientCompany"
+              value={formData.clientCompany}
+              onChange={handleInputChange}
+              placeholder="Coffee Shop Inc."
+              className="block w-full px-4 py-4 border-4 border-brutalist-black dark:border-brutalist-white bg-brutalist-white dark:bg-brutalist-dark-gray text-brutalist-black dark:text-brutalist-white placeholder-brutalist-gray font-bold text-lg focus:border-electric-500 focus:shadow-brutal-lg transition-all duration-200 uppercase tracking-wide"
+            />
+          </div>
         </div>
 
         {/* Project Description */}
-        <div>
-          <label className="block text-sm font-bold text-brutalist-black dark:text-brutalist-white mb-2 uppercase tracking-wide">
+        <div className="input-liquid">
+          <label className="block text-sm font-black text-brutalist-black dark:text-brutalist-white mb-3 uppercase tracking-wider">
             PROJECT DESCRIPTION *
           </label>
           <textarea
             name="description"
             value={formData.description}
             onChange={handleInputChange}
-            rows={4}
-            className="block w-full px-4 py-3 border-2 border-brutalist-black dark:border-brutalist-white bg-brutalist-white dark:bg-brutalist-dark-gray text-brutalist-black dark:text-brutalist-white placeholder-brutalist-gray font-medium focus:border-electric-500 focus:shadow-electric transition-all duration-200"
-            placeholder="Describe your project requirements, goals, and key deliverables..."
+            rows={5}
+            className="block w-full px-4 py-4 border-4 border-brutalist-black dark:border-brutalist-white bg-brutalist-white dark:bg-brutalist-dark-gray text-brutalist-black dark:text-brutalist-white placeholder-brutalist-gray font-bold text-lg focus:border-electric-500 focus:shadow-brutal-lg transition-all duration-200 resize-none"
+            placeholder="DESCRIBE YOUR PROJECT REQUIREMENTS, GOALS, AND KEY DELIVERABLES..."
             required
           />
         </div>
 
         {/* Budget and Timeline */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <GlassInput
-            label="Estimated Budget ($)"
-            name="estimatedBudget"
-            type="number"
-            value={formData.estimatedBudget}
-            onChange={handleInputChange}
-            placeholder="5000"
-            fullWidth
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="input-liquid">
+            <label className="block text-sm font-black text-brutalist-black dark:text-brutalist-white mb-3 uppercase tracking-wider">
+              ESTIMATED BUDGET ($)
+            </label>
+            <input
+              name="estimatedBudget"
+              type="number"
+              value={formData.estimatedBudget}
+              onChange={handleInputChange}
+              placeholder="5000"
+              className="block w-full px-4 py-4 border-4 border-brutalist-black dark:border-brutalist-white bg-brutalist-white dark:bg-brutalist-dark-gray text-brutalist-black dark:text-brutalist-white placeholder-brutalist-gray font-bold text-lg focus:border-electric-500 focus:shadow-brutal-lg transition-all duration-200"
+            />
+          </div>
           
-          <GlassInput
-            label="Timeline (weeks)"
-            name="timeline"
-            type="number"
-            value={formData.timeline}
-            onChange={handleInputChange}
-            placeholder="4"
-            fullWidth
-          />
+          <div className="input-liquid">
+            <label className="block text-sm font-black text-brutalist-black dark:text-brutalist-white mb-3 uppercase tracking-wider">
+              TIMELINE (WEEKS)
+            </label>
+            <input
+              name="timeline"
+              type="number"
+              value={formData.timeline}
+              onChange={handleInputChange}
+              placeholder="4"
+              className="block w-full px-4 py-4 border-4 border-brutalist-black dark:border-brutalist-white bg-brutalist-white dark:bg-brutalist-dark-gray text-brutalist-black dark:text-brutalist-white placeholder-brutalist-gray font-bold text-lg focus:border-electric-500 focus:shadow-brutal-lg transition-all duration-200"
+            />
+          </div>
         </div>
 
         {/* Preferences */}
@@ -229,27 +254,26 @@ export default function SimpleAIGenerator({ onProposalGenerated }: SimpleAIGener
         </div>
 
         {/* Generate Button */}
-        <GlassButton
-          variant="brutalist-electric"
+        <button
           onClick={handleGenerate}
           disabled={isGenerating || !formData.title || !formData.clientName || !formData.description}
-          loading={isGenerating}
-          fullWidth
-          size="lg"
+          className="btn-primary w-full py-6 px-8 text-2xl group electric-pulse hover:shadow-brutal-lg transform hover:-translate-x-2 hover:-translate-y-2 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
         >
           {isGenerating ? (
             <>
-              <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-              GENERATING PROPOSAL...
+              <Loader2 className="h-8 w-8 mr-4 animate-spin" />
+              GENERATING BRUTAL PROPOSAL...
             </>
           ) : (
             <>
-              <Wand2 className="h-5 w-5 mr-2" />
+              <Wand2 className="h-8 w-8 mr-4 group-hover:animate-spin" />
               GENERATE PROPOSAL WITH AI
             </>
           )}
-        </GlassButton>
+          {/* Electric border animation */}
+          <div className="absolute inset-0 border-4 border-electric-500 opacity-0 group-hover:opacity-40 transition-opacity duration-500 pointer-events-none animate-pulse"></div>
+        </button>
       </div>
-    </GlassCard>
+    </div>
   )
 }

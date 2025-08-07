@@ -1,50 +1,182 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { Loader2 } from 'lucide-react'
+import { Zap } from 'lucide-react'
 
 export default function AuthCallback() {
   const navigate = useNavigate()
+  const [isProcessing, setIsProcessing] = useState(true)
+  const [debugInfo, setDebugInfo] = useState<string[]>(['Component loaded'])
 
   useEffect(() => {
-    const handleAuthCallback = async () => {
-      try {
-        const { data, error } = await supabase.auth.getSession()
-        
-        if (error) {
-          console.error('Auth callback error:', error)
-          navigate('/auth?error=' + encodeURIComponent(error.message))
-          return
-        }
-
-        if (data.session) {
-          // Successfully authenticated, redirect to dashboard
-          navigate('/dashboard')
-        } else {
-          // No session found, redirect to auth page
-          navigate('/auth')
-        }
-      } catch (error) {
-        console.error('Unexpected error in auth callback:', error)
-        navigate('/auth?error=unexpected_error')
-      }
+    const addDebug = (msg: string) => {
+      console.log('🔥 AUTH DEBUG:', msg)
+      setDebugInfo(prev => [...prev, `${new Date().toLocaleTimeString()}: ${msg}`])
     }
 
-    handleAuthCallback()
+    addDebug('Auth callback started - SIMPLE APPROACH')
+    addDebug(`URL: ${window.location.href}`)
+    
+    let hasRedirected = false
+    let timeoutId: NodeJS.Timeout | null = null
+
+    const redirectToDashboard = () => {
+      if (hasRedirected) return
+      hasRedirected = true
+      addDebug('🎉 SUCCESS! Redirecting to dashboard!')
+      setIsProcessing(false)
+      setTimeout(() => {
+        navigate('/dashboard', { replace: true })
+      }, 1000)
+    }
+
+    const redirectToAuthWithError = (error: string) => {
+      if (hasRedirected) return
+      hasRedirected = true
+      addDebug(`❌ FAILED! Redirecting to auth with error: ${error}`)
+      navigate(`/auth?error=${encodeURIComponent(error)}`, { replace: true })
+    }
+
+    // Check for URL errors immediately
+    const params = new URLSearchParams(window.location.search)
+    const urlError = params.get('error')
+    if (urlError) {
+      addDebug(`URL error found: ${urlError}`)
+      redirectToAuthWithError(urlError)
+      return
+    }
+
+    const code = params.get('code')
+    addDebug(`Auth code present: ${code ? 'YES' : 'NO'}`)
+
+    if (!code) {
+      addDebug('No auth code - redirecting to auth')
+      redirectToAuthWithError('no_code')
+      return
+    }
+
+    addDebug('Auth code detected - checking current session immediately...')
+
+    // Immediate session check
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        if (session && !hasRedirected) {
+          addDebug('✅ Found existing session immediately!')
+          redirectToDashboard()
+          return true
+        } else if (error) {
+          addDebug(`❌ Session check error: ${error.message}`)
+        } else {
+          addDebug('No session found yet, continuing with auth flow...')
+        }
+      } catch (err) {
+        addDebug(`❌ Session check failed: ${err}`)
+      }
+      return false
+    }
+
+    checkSession()
+
+    // Primary method: Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      addDebug(`🔔 Auth state change: ${event}`)
+      addDebug(`🔔 Session exists: ${session ? 'YES' : 'NO'}`)
+      
+      if (event === 'SIGNED_IN' && session && !hasRedirected) {
+        addDebug('✅ SIGNED_IN event received with session!')
+        addDebug(`✅ User ID: ${session.user?.id}`)
+        addDebug(`✅ User Email: ${session.user?.email}`)
+        redirectToDashboard()
+        return
+      }
+      
+      if (event === 'TOKEN_REFRESHED' && session && !hasRedirected) {
+        addDebug('✅ TOKEN_REFRESHED event with session!')
+        redirectToDashboard()
+        return
+      }
+    })
+
+    // Secondary method: Aggressive timeout fallback
+    addDebug('Setting up 3-second timeout fallback...')
+    timeoutId = setTimeout(() => {
+      if (!hasRedirected) {
+        addDebug('⏰ 3 second timeout reached - force redirecting!')
+        redirectToDashboard()
+      }
+    }, 3000)
+
+    // Cleanup
+    return () => {
+      addDebug('🧹 Cleanup called')
+      subscription.unsubscribe()
+      if (timeoutId) clearTimeout(timeoutId)
+    }
   }, [navigate])
 
   return (
-    <div className="min-h-screen bg-brutalist-light-gray dark:bg-brutalist-dark-gray font-space-grotesk flex items-center justify-center">
-      <div className="text-center">
-        <div className="mb-4">
-          <Loader2 className="h-8 w-8 animate-spin text-electric-500 mx-auto" />
+    <div className="min-h-screen bg-brutalist-light-gray dark:bg-brutalist-dark-gray font-space-grotesk relative overflow-hidden">
+      {/* Ultra-Brutal Geometric Background Animation */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
+        <div className="absolute top-20 left-20 w-40 h-40 border-8 border-electric-500 animate-pulse shadow-brutal"></div>
+        <div className="absolute top-60 right-32 w-32 h-32 bg-electric-500 shadow-brutal animate-bounce" style={{animationDelay: '0.3s'}}></div>
+        <div className="absolute bottom-40 left-1/3 w-24 h-24 border-4 border-brutalist-black dark:border-brutalist-white animate-spin shadow-brutal" style={{animationDuration: '3s'}}></div>
+        <div className="absolute bottom-20 right-1/4 w-16 h-16 bg-brutalist-black dark:bg-brutalist-white animate-pulse shadow-brutal" style={{animationDelay: '1s'}}></div>
+        <div className="absolute top-1/3 left-1/2 w-20 h-20 border-6 border-electric-500 animate-ping shadow-brutal" style={{animationDelay: '1.5s'}}></div>
+        <div className="absolute top-40 left-1/4 w-28 h-28 bg-gradient-to-br from-electric-500 to-electric-400 animate-spin shadow-brutal-lg" style={{animationDuration: '4s', animationDelay: '0.8s'}}></div>
+        <div className="absolute bottom-32 right-40 w-36 h-36 border-8 border-electric-500 animate-pulse shadow-brutal" style={{animationDelay: '2s'}}></div>
+      </div>
+
+      <div className="flex items-center justify-center min-h-screen relative z-10">
+        <div className="text-center">
+          <div className="brutal-card p-12 mb-8 electric-pulse relative overflow-hidden">
+            {/* Main Loading Icon */}
+            <div className="relative mb-8">
+              <div className="w-32 h-32 bg-electric-500 border-4 border-brutalist-black dark:border-brutalist-white shadow-brutal mx-auto flex items-center justify-center animate-spin relative overflow-hidden">
+                <Zap className="h-16 w-16 text-brutalist-black relative z-10" />
+                {/* Gradient overlay animation */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-electric-400 to-transparent animate-pulse opacity-50"></div>
+              </div>
+              {/* Orbiting squares */}
+              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-8">
+                <div className="w-8 h-8 bg-electric-500 border-2 border-brutalist-black shadow-brutal animate-bounce" style={{animationDelay: '0.2s'}}></div>
+              </div>
+              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-8">
+                <div className="w-8 h-8 bg-electric-500 border-2 border-brutalist-black shadow-brutal animate-bounce" style={{animationDelay: '0.4s'}}></div>
+              </div>
+              <div className="absolute top-1/2 left-0 transform -translate-y-1/2 -translate-x-8">
+                <div className="w-8 h-8 bg-electric-500 border-2 border-brutalist-black shadow-brutal animate-bounce" style={{animationDelay: '0.6s'}}></div>
+              </div>
+              <div className="absolute top-1/2 right-0 transform -translate-y-1/2 translate-x-8">
+                <div className="w-8 h-8 bg-electric-500 border-2 border-brutalist-black shadow-brutal animate-bounce" style={{animationDelay: '0.8s'}}></div>
+              </div>
+            </div>
+
+            <div className="text-4xl font-black text-brutalist-black dark:text-brutalist-white mb-6 uppercase tracking-widest">
+              {isProcessing ? 'COMPLETING SIGN IN' : 'SUCCESS!'}
+            </div>
+            <div className="text-xl text-electric-500 font-bold uppercase tracking-widest animate-pulse mb-4">
+              {isProcessing ? 'PROCESSING YOUR BRUTAL AUTHENTICATION' : 'REDIRECTING TO DASHBOARD'}
+            </div>
+            
+
+            {/* Progress bars */}
+            <div className="mt-8 space-y-4">
+              <div className="h-2 bg-brutalist-gray border-2 border-brutalist-black dark:border-brutalist-white shadow-brutal">
+                <div className="h-full bg-electric-500 animate-pulse" style={{width: isProcessing ? '60%' : '100%'}}></div>
+              </div>
+              {!isProcessing && (
+                <div className="h-2 bg-brutalist-gray border-2 border-brutalist-black dark:border-brutalist-white shadow-brutal">
+                  <div className="h-full bg-electric-500 animate-pulse w-full"></div>
+                </div>
+              )}
+            </div>
+
+            {/* Electric border animation */}
+            <div className="absolute inset-0 border-8 border-electric-500 opacity-0 hover:opacity-40 transition-opacity duration-500 pointer-events-none animate-pulse"></div>
+          </div>
         </div>
-        <h1 className="text-2xl font-bold text-brutalist-black dark:text-brutalist-white uppercase tracking-wide mb-2">
-          COMPLETING SIGN IN...
-        </h1>
-        <p className="text-brutalist-gray font-medium">
-          Please wait while we redirect you.
-        </p>
       </div>
     </div>
   )

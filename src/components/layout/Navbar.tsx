@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, Zap, Plus, BarChart3, Settings, LogOut, User, FileText, Shield, DollarSign } from 'lucide-react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Menu, X, Zap, Plus, BarChart3, Settings, LogOut, User } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import GlassCard from '../ui/GlassCard'
 import GlassButton from '../ui/GlassButton'
@@ -11,6 +11,7 @@ export default function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const { userProfile, signOut, user } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   const navigation = [
@@ -41,10 +42,13 @@ export default function Navbar() {
 
   const handleSignOut = async () => {
     try {
+      console.log('🚨 Starting sign out process...')
       await signOut()
       setIsDropdownOpen(false)
+      console.log('✅ Sign out successful, redirecting to home...')
+      navigate('/', { replace: true })
     } catch (error) {
-      console.error('Sign out error:', error)
+      console.error('❌ Sign out error:', error)
     }
   }
 
@@ -116,42 +120,6 @@ export default function Navbar() {
                     >
                       <Settings className="h-4 w-4 mr-2" />
                       Settings
-                    </Link>
-                    <Link
-                      to="/pricing"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center px-3 py-2 text-sm text-brutalist-black/70 dark:text-white/70 hover:text-brutalist-black dark:hover:text-white hover:bg-brutalist-black/10 dark:hover:bg-white/10 rounded-xl transition-colors"
-                    >
-                      <DollarSign className="h-4 w-4 mr-2" />
-                      Pricing
-                    </Link>
-                    <hr className="border-brutalist-black/20 dark:border-white/20" />
-                    <div className="px-3 py-1">
-                      <p className="text-xs font-medium text-brutalist-black/50 dark:text-white/50 uppercase tracking-wider">Legal</p>
-                    </div>
-                    <Link
-                      to="/terms"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center px-3 py-2 text-sm text-brutalist-black/70 dark:text-white/70 hover:text-brutalist-black dark:hover:text-white hover:bg-brutalist-black/10 dark:hover:bg-white/10 rounded-xl transition-colors"
-                    >
-                      <FileText className="h-4 w-4 mr-2" />
-                      Terms of Service
-                    </Link>
-                    <Link
-                      to="/privacy"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center px-3 py-2 text-sm text-brutalist-black/70 dark:text-white/70 hover:text-brutalist-black dark:hover:text-white hover:bg-brutalist-black/10 dark:hover:bg-white/10 rounded-xl transition-colors"
-                    >
-                      <Shield className="h-4 w-4 mr-2" />
-                      Privacy Policy
-                    </Link>
-                    <Link
-                      to="/refund-policy"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center px-3 py-2 text-sm text-brutalist-black/70 dark:text-white/70 hover:text-brutalist-black dark:hover:text-white hover:bg-brutalist-black/10 dark:hover:bg-white/10 rounded-xl transition-colors"
-                    >
-                      <DollarSign className="h-4 w-4 mr-2" />
-                      Refund Policy
                     </Link>
                     <hr className="border-brutalist-black/20 dark:border-white/20" />
                     <button

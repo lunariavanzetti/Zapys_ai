@@ -234,10 +234,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) {
-      toast.error('Error signing out')
-      console.error('Sign out error:', error)
+    console.log('🔥 AUTH CONTEXT: Starting signOut process...')
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('❌ AUTH CONTEXT: Sign out error:', error)
+        toast.error('Error signing out: ' + error.message)
+        throw error
+      } else {
+        console.log('✅ AUTH CONTEXT: Sign out successful')
+        // Manually clear state to ensure immediate UI update
+        setUser(null)
+        setSession(null)
+        setUserProfile(null)
+      }
+    } catch (error) {
+      console.error('❌ AUTH CONTEXT: Sign out failed:', error)
+      throw error
     }
   }
 

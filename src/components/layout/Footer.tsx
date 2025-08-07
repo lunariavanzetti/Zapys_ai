@@ -76,17 +76,9 @@ export default function Footer() {
               CONTACT
             </h3>
             <div className="space-y-3">
-              <a href="mailto:support@zapysai.com" className="flex items-center text-brutalist-white font-bold uppercase tracking-wider text-sm hover:text-electric-500 transition-colors">
+              <a href="mailto:zapysaiproduction@gmail.com" className="flex items-center text-brutalist-white font-bold uppercase tracking-wider text-sm hover:text-electric-500 transition-colors">
                 <Mail className="h-4 w-4 mr-2" />
-                SUPPORT@ZAPYSAI.COM
-              </a>
-              <a href="mailto:legal@zapysai.com" className="flex items-center text-brutalist-white font-bold uppercase tracking-wider text-sm hover:text-electric-500 transition-colors">
-                <Mail className="h-4 w-4 mr-2" />
-                LEGAL@ZAPYSAI.COM
-              </a>
-              <a href="mailto:privacy@zapysai.com" className="flex items-center text-brutalist-white font-bold uppercase tracking-wider text-sm hover:text-electric-500 transition-colors">
-                <Mail className="h-4 w-4 mr-2" />
-                PRIVACY@ZAPYSAI.COM
+                ZAPYSAIPRODUCTION@GMAIL.COM
               </a>
             </div>
           </div>

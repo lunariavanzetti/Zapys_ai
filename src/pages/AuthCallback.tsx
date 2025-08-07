@@ -63,56 +63,41 @@ export default function AuthCallback() {
           console.error('🔥 AUTH CALLBACK: Supabase connectivity failed:', connectivityError)
         }
         
-        // First try manual code exchange with timeout (more reliable for OAuth)
-        try {
-          console.log('🔥 AUTH CALLBACK: Trying manual code exchange first...')
+        // Skip manual code handling and just check current session
+        console.log('🔥 AUTH CALLBACK: Skipping code exchange, checking if session exists...')
+        
+        // Wait a moment for Supabase to automatically process the OAuth callback
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        
+        // Simple session check without manual code exchange
+        console.log('🔥 AUTH CALLBACK: Checking for existing session...')
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+        
+        console.log('🔥 AUTH CALLBACK: Session check result:', {
+          hasSession: !!session,
+          error: sessionError?.message,
+          userEmail: session?.user?.email
+        })
+        
+        if (session) {
+          console.log('✅ AUTH CALLBACK: Found existing session!')
           
-          // Add timeout to code exchange to prevent hanging
-          const codeExchangePromise = supabase.auth.exchangeCodeForSession(code)
-          const exchangeTimeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Code exchange timeout')), 8000)
-          )
+          // Check if this is a new user
+          const userCreatedAt = new Date(session.user.created_at)
+          const now = new Date()
+          const isNewAccount = (now.getTime() - userCreatedAt.getTime()) < 60000
           
-          console.log('🔥 AUTH CALLBACK: Starting code exchange with 8-second timeout...')
-          const { data: exchangeData, error: exchangeError } = await Promise.race([
-            codeExchangePromise,
-            exchangeTimeoutPromise
-          ]) as any
-          
-          console.log('🔥 AUTH CALLBACK: Code exchange completed!')
-          
-          if (exchangeError) {
-            console.error('🔥 AUTH CALLBACK: Code exchange failed:', exchangeError)
-          } else if (exchangeData?.session) {
-            console.log('🔥 AUTH CALLBACK: Manual code exchange successful!')
-            const session = exchangeData.session
-            
-            console.log('🔥 AUTH CALLBACK: Session result:', { 
-              hasSession: !!session, 
-              userEmail: session?.user?.email,
-              userId: session?.user?.id
-            })
-            
-            console.log('✅ AUTH CALLBACK: Authentication successful:', session.user.email)
-            
-            // Check if this is a new user (account creation) or returning user (sign in)
-            const userCreatedAt = new Date(session.user.created_at)
-            const now = new Date()
-            const isNewAccount = (now.getTime() - userCreatedAt.getTime()) < 60000 // 1 minute
-            
-            console.log('🔥 AUTH CALLBACK: User created at:', userCreatedAt)
-            console.log('🔥 AUTH CALLBACK: Is new user:', isNewAccount)
-            
-            setIsNewUser(isNewAccount)
-            setStatus('success')
-            setTimeout(() => navigate('/dashboard'), 1000)
-            return
-          } else {
-            console.log('🔥 AUTH CALLBACK: Code exchange returned no session')
-          }
-        } catch (exchangeErr) {
-          console.error('🔥 AUTH CALLBACK: Code exchange exception:', exchangeErr)
+          setIsNewUser(isNewAccount)
+          setStatus('success')
+          setTimeout(() => navigate('/dashboard'), 1000)
+          return
         }
+        
+        // If no session found, there might be an OAuth configuration issue
+        console.log('❌ AUTH CALLBACK: No session found, redirecting to auth with error')
+        setStatus('error')
+        setTimeout(() => navigate('/auth?error=oauth_failed'), 2000)
+        return
         
         // Fallback to getSession with timeout
         console.log('🔥 AUTH CALLBACK: Falling back to getSession() with timeout...')

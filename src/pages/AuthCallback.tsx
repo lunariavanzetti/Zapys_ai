@@ -63,41 +63,73 @@ export default function AuthCallback() {
           console.error('🔥 AUTH CALLBACK: Supabase connectivity failed:', connectivityError)
         }
         
-        // Skip manual code handling and just check current session
-        console.log('🔥 AUTH CALLBACK: Skipping code exchange, checking if session exists...')
+        // Use auth state listener approach instead of direct session calls
+        console.log('🔥 AUTH CALLBACK: Using auth state listener approach...')
         
-        // Wait a moment for Supabase to automatically process the OAuth callback
-        await new Promise(resolve => setTimeout(resolve, 2000))
+        let authTimeout: NodeJS.Timeout | null = null
+        let authListener: { data: { subscription: any } } | null = null
         
-        // Simple session check without manual code exchange
-        console.log('🔥 AUTH CALLBACK: Checking for existing session...')
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-        
-        console.log('🔥 AUTH CALLBACK: Session check result:', {
-          hasSession: !!session,
-          error: sessionError?.message,
-          userEmail: session?.user?.email
+        // Set up a one-time auth state listener
+        const authPromise = new Promise((resolve, reject) => {
+          console.log('🔥 AUTH CALLBACK: Setting up auth state listener...')
+          
+          authTimeout = setTimeout(() => {
+            console.log('🔥 AUTH CALLBACK: Auth listener timeout after 10 seconds')
+            if (authListener) {
+              authListener.data.subscription.unsubscribe()
+            }
+            reject(new Error('Auth listener timeout'))
+          }, 10000)
+          
+          authListener = supabase.auth.onAuthStateChange((event, session) => {
+            console.log('🔥 AUTH CALLBACK: Auth state change detected:', {
+              event,
+              hasSession: !!session,
+              userEmail: session?.user?.email
+            })
+            
+            if (session && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+              console.log('✅ AUTH CALLBACK: Authentication successful via listener!')
+              
+              // Clean up
+              if (authTimeout) clearTimeout(authTimeout)
+              if (authListener) authListener.data.subscription.unsubscribe()
+              
+              // Check if this is a new user
+              const userCreatedAt = new Date(session.user.created_at)
+              const now = new Date()
+              const isNewAccount = (now.getTime() - userCreatedAt.getTime()) < 60000
+              
+              console.log('🔥 AUTH CALLBACK: User created at:', userCreatedAt)
+              console.log('🔥 AUTH CALLBACK: Is new user:', isNewAccount)
+              
+              resolve({ session, isNewAccount })
+            } else if (event === 'SIGNED_OUT') {
+              console.log('🔥 AUTH CALLBACK: Sign out detected, ignoring')
+            }
+          })
         })
         
-        if (session) {
-          console.log('✅ AUTH CALLBACK: Found existing session!')
-          
-          // Check if this is a new user
-          const userCreatedAt = new Date(session.user.created_at)
-          const now = new Date()
-          const isNewAccount = (now.getTime() - userCreatedAt.getTime()) < 60000
+        try {
+          console.log('🔥 AUTH CALLBACK: Waiting for auth state change...')
+          const { session, isNewAccount } = await authPromise as any
           
           setIsNewUser(isNewAccount)
           setStatus('success')
           setTimeout(() => navigate('/dashboard'), 1000)
           return
+          
+        } catch (authErr) {
+          console.error('🔥 AUTH CALLBACK: Auth listener failed:', authErr)
+          
+          // Clean up
+          if (authTimeout) clearTimeout(authTimeout)
+          if (authListener) authListener.data.subscription.unsubscribe()
+          
+          setStatus('error')
+          setTimeout(() => navigate('/auth?error=auth_timeout'), 2000)
+          return
         }
-        
-        // If no session found, there might be an OAuth configuration issue
-        console.log('❌ AUTH CALLBACK: No session found, redirecting to auth with error')
-        setStatus('error')
-        setTimeout(() => navigate('/auth?error=oauth_failed'), 2000)
-        return
       } catch (err) {
         console.error('🔥 AUTH CALLBACK: Unexpected error:', err)
         setStatus('error')

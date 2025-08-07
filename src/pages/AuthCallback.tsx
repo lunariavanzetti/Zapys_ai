@@ -38,10 +38,23 @@ export default function AuthCallback() {
 
         console.log('🔥 AUTH CALLBACK: Attempting to get session...')
         
-        // First try manual code exchange (more reliable for OAuth)
+        // First try manual code exchange with timeout (more reliable for OAuth)
         try {
           console.log('🔥 AUTH CALLBACK: Trying manual code exchange first...')
-          const { data: exchangeData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+          
+          // Add timeout to code exchange to prevent hanging
+          const codeExchangePromise = supabase.auth.exchangeCodeForSession(code)
+          const exchangeTimeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Code exchange timeout')), 8000)
+          )
+          
+          console.log('🔥 AUTH CALLBACK: Starting code exchange with 8-second timeout...')
+          const { data: exchangeData, error: exchangeError } = await Promise.race([
+            codeExchangePromise,
+            exchangeTimeoutPromise
+          ]) as any
+          
+          console.log('🔥 AUTH CALLBACK: Code exchange completed!')
           
           if (exchangeError) {
             console.error('🔥 AUTH CALLBACK: Code exchange failed:', exchangeError)
@@ -69,6 +82,8 @@ export default function AuthCallback() {
             setStatus('success')
             setTimeout(() => navigate('/dashboard'), 1000)
             return
+          } else {
+            console.log('🔥 AUTH CALLBACK: Code exchange returned no session')
           }
         } catch (exchangeErr) {
           console.error('🔥 AUTH CALLBACK: Code exchange exception:', exchangeErr)

@@ -38,8 +38,53 @@ export default function AuthCallback() {
 
         console.log('🔥 AUTH CALLBACK: Attempting to get session...')
         
-        // Get the session after OAuth redirect
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+        // First try manual code exchange (more reliable for OAuth)
+        try {
+          console.log('🔥 AUTH CALLBACK: Trying manual code exchange first...')
+          const { data: exchangeData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+          
+          if (exchangeError) {
+            console.error('🔥 AUTH CALLBACK: Code exchange failed:', exchangeError)
+          } else if (exchangeData?.session) {
+            console.log('🔥 AUTH CALLBACK: Manual code exchange successful!')
+            const session = exchangeData.session
+            
+            console.log('🔥 AUTH CALLBACK: Session result:', { 
+              hasSession: !!session, 
+              userEmail: session?.user?.email,
+              userId: session?.user?.id
+            })
+            
+            console.log('✅ AUTH CALLBACK: Authentication successful:', session.user.email)
+            
+            // Check if this is a new user (account creation) or returning user (sign in)
+            const userCreatedAt = new Date(session.user.created_at)
+            const now = new Date()
+            const isNewAccount = (now.getTime() - userCreatedAt.getTime()) < 60000 // 1 minute
+            
+            console.log('🔥 AUTH CALLBACK: User created at:', userCreatedAt)
+            console.log('🔥 AUTH CALLBACK: Is new user:', isNewAccount)
+            
+            setIsNewUser(isNewAccount)
+            setStatus('success')
+            setTimeout(() => navigate('/dashboard'), 1000)
+            return
+          }
+        } catch (exchangeErr) {
+          console.error('🔥 AUTH CALLBACK: Code exchange exception:', exchangeErr)
+        }
+        
+        // Fallback to getSession with timeout
+        console.log('🔥 AUTH CALLBACK: Falling back to getSession() with timeout...')
+        const sessionPromise = supabase.auth.getSession()
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Session timeout')), 5000)
+        )
+        
+        const { data: { session }, error: sessionError } = await Promise.race([
+          sessionPromise,
+          timeoutPromise
+        ]) as any
         
         console.log('🔥 AUTH CALLBACK: Session result:', { 
           hasSession: !!session, 

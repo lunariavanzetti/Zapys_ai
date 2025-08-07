@@ -31,12 +31,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Get initial session
     const initializeAuth = async () => {
       try {
+        console.log('🔥 AUTH CONTEXT: Initializing auth...')
         const { data: { session }, error } = await supabase.auth.getSession()
         
-        if (!mounted) return
+        if (!mounted) {
+          console.log('🔥 AUTH CONTEXT: Component unmounted, skipping initialization')
+          return
+        }
+        
+        console.log('🔥 AUTH CONTEXT: Initial session check:', {
+          hasSession: !!session,
+          error: error?.message,
+          userEmail: session?.user?.email,
+          userId: session?.user?.id
+        })
         
         if (error) {
-          console.error('Session check error:', error)
+          console.error('🔥 AUTH CONTEXT: Session check error:', error)
           setLoading(false)
           return
         }
@@ -45,12 +56,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null)
         
         if (session?.user) {
+          console.log('🔥 AUTH CONTEXT: Fetching user profile for:', session.user.id)
           await fetchUserProfile(session.user.id)
+        } else {
+          console.log('🔥 AUTH CONTEXT: No session found on initialization')
         }
         
+        console.log('🔥 AUTH CONTEXT: Initialization complete, stopping loading')
         setLoading(false)
       } catch (error) {
-        console.error('Auth initialization error:', error)
+        console.error('🔥 AUTH CONTEXT: Auth initialization error:', error)
         if (mounted) {
           setLoading(false)
         }
@@ -63,14 +78,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return
+      if (!mounted) {
+        console.log('🔥 AUTH CONTEXT: Component unmounted, ignoring auth state change')
+        return
+      }
 
-      console.log('Auth state change:', event, session?.user?.email)
+      console.log('🔥 AUTH CONTEXT: Auth state change:', {
+        event,
+        hasSession: !!session,
+        userEmail: session?.user?.email,
+        userId: session?.user?.id,
+        userCreatedAt: session?.user?.created_at
+      })
       
       setSession(session)
       setUser(session?.user ?? null)
       
       if (session?.user) {
+        console.log('🔥 AUTH CONTEXT: Session found, fetching profile for:', session.user.id)
         await fetchUserProfile(session.user.id)
         
         // Show welcome message
@@ -79,19 +104,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const now = new Date()
           const isNewUser = (now.getTime() - userCreatedAt.getTime()) < 30000 // 30 seconds
           
+          console.log('🔥 AUTH CONTEXT: User created at:', userCreatedAt, 'Is new user:', isNewUser)
+          
           if (isNewUser) {
+            console.log('🔥 AUTH CONTEXT: Showing new user welcome message')
             toast.success('Welcome to Zapys AI! Account created successfully.')
           } else {
+            console.log('🔥 AUTH CONTEXT: Showing returning user welcome message')
             toast.success('Welcome back!')
           }
         }
       } else {
+        console.log('🔥 AUTH CONTEXT: No session, clearing user profile')
         setUserProfile(null)
         if (event === 'SIGNED_OUT') {
+          console.log('🔥 AUTH CONTEXT: Showing signed out message')
           toast.success('Signed out successfully')
         }
       }
       
+      console.log('🔥 AUTH CONTEXT: Auth state change complete, stopping loading')
       setLoading(false)
     })
 
@@ -103,7 +135,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      console.log('Fetching user profile for:', userId)
+      console.log('🔥 AUTH CONTEXT: Fetching user profile for:', userId)
       
       // Add timeout to prevent hanging
       const profileTimeout = setTimeout(() => {
@@ -211,9 +243,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signInWithGoogle = async () => {
+    console.log('🔥 AUTH CONTEXT: Starting Google OAuth...')
     const redirectUrl = import.meta.env.VITE_APP_URL 
       ? `${import.meta.env.VITE_APP_URL}/auth/callback`
       : `${window.location.origin}/auth/callback`
+    
+    console.log('🔥 AUTH CONTEXT: Redirect URL:', redirectUrl)
     
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -221,6 +256,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         redirectTo: redirectUrl,
       },
     })
+    
+    if (error) {
+      console.error('🔥 AUTH CONTEXT: Google OAuth error:', error)
+    } else {
+      console.log('🔥 AUTH CONTEXT: Google OAuth initiated successfully')
+    }
+    
     return { error }
   }
 

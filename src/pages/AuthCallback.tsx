@@ -6,31 +6,76 @@ import { Zap } from 'lucide-react'
 export default function AuthCallback() {
   const navigate = useNavigate()
   const [status, setStatus] = useState('processing')
+  const [isNewUser, setIsNewUser] = useState(false)
 
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Get the session after OAuth redirect
-        const { data: { session }, error } = await supabase.auth.getSession()
+        console.log('🔥 AUTH CALLBACK: Starting auth callback process')
+        console.log('🔥 AUTH CALLBACK: URL:', window.location.href)
+        
+        // Check for URL parameters
+        const urlParams = new URLSearchParams(window.location.search)
+        const code = urlParams.get('code')
+        const error = urlParams.get('error')
+        
+        console.log('🔥 AUTH CALLBACK: OAuth code present:', !!code)
+        console.log('🔥 AUTH CALLBACK: Error in URL:', error)
         
         if (error) {
-          console.error('Auth callback error:', error)
+          console.error('🔥 AUTH CALLBACK: OAuth error in URL:', error)
           setStatus('error')
-          setTimeout(() => navigate('/auth?error=callback_failed'), 2000)
+          setTimeout(() => navigate(`/auth?error=oauth_${error}`), 2000)
+          return
+        }
+
+        if (!code) {
+          console.error('🔥 AUTH CALLBACK: No OAuth code found')
+          setStatus('error')
+          setTimeout(() => navigate('/auth?error=no_code'), 2000)
+          return
+        }
+
+        console.log('🔥 AUTH CALLBACK: Attempting to get session...')
+        
+        // Get the session after OAuth redirect
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+        
+        console.log('🔥 AUTH CALLBACK: Session result:', { 
+          hasSession: !!session, 
+          error: sessionError,
+          userEmail: session?.user?.email,
+          userId: session?.user?.id
+        })
+        
+        if (sessionError) {
+          console.error('🔥 AUTH CALLBACK: Session error:', sessionError)
+          setStatus('error')
+          setTimeout(() => navigate('/auth?error=session_failed'), 2000)
           return
         }
 
         if (session) {
-          console.log('✅ Authentication successful:', session.user.email)
+          console.log('✅ AUTH CALLBACK: Authentication successful:', session.user.email)
+          
+          // Check if this is a new user (account creation) or returning user (sign in)
+          const userCreatedAt = new Date(session.user.created_at)
+          const now = new Date()
+          const isNewAccount = (now.getTime() - userCreatedAt.getTime()) < 60000 // 1 minute
+          
+          console.log('🔥 AUTH CALLBACK: User created at:', userCreatedAt)
+          console.log('🔥 AUTH CALLBACK: Is new user:', isNewAccount)
+          
+          setIsNewUser(isNewAccount)
           setStatus('success')
           setTimeout(() => navigate('/dashboard'), 1000)
         } else {
-          console.log('❌ No session found')
+          console.log('❌ AUTH CALLBACK: No session found after OAuth')
           setStatus('error')
           setTimeout(() => navigate('/auth?error=no_session'), 2000)
         }
       } catch (err) {
-        console.error('Unexpected error:', err)
+        console.error('🔥 AUTH CALLBACK: Unexpected error:', err)
         setStatus('error')
         setTimeout(() => navigate('/auth?error=unexpected'), 2000)
       }
@@ -48,14 +93,14 @@ export default function AuthCallback() {
           </div>
 
           <div className="text-4xl font-black text-brutalist-black dark:text-brutalist-white mb-4 uppercase tracking-widest">
-            {status === 'processing' && 'SIGNING YOU IN...'}
-            {status === 'success' && 'SUCCESS!'}
+            {status === 'processing' && 'PROCESSING...'}
+            {status === 'success' && (isNewUser ? 'ACCOUNT CREATED!' : 'WELCOME BACK!')}
             {status === 'error' && 'SOMETHING WENT WRONG'}
           </div>
           
           <div className="text-lg text-electric-500 font-bold uppercase tracking-wider">
-            {status === 'processing' && 'PLEASE WAIT'}
-            {status === 'success' && 'REDIRECTING TO DASHBOARD'}
+            {status === 'processing' && 'AUTHENTICATING YOUR ACCOUNT'}
+            {status === 'success' && (isNewUser ? 'SETTING UP YOUR WORKSPACE' : 'REDIRECTING TO DASHBOARD')}
             {status === 'error' && 'REDIRECTING TO LOGIN'}
           </div>
         </div>

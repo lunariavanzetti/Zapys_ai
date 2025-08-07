@@ -88,6 +88,18 @@ export default function AuthCallback() {
         addDebug('✅ SIGNED_IN event received with session!')
         addDebug(`✅ User ID: ${session.user?.id}`)
         addDebug(`✅ User Email: ${session.user?.email}`)
+        
+        // Check if new user (created in last 30 seconds)
+        const userCreatedAt = new Date(session.user?.created_at || '')
+        const now = new Date()
+        const isNewUser = (now.getTime() - userCreatedAt.getTime()) < 30000
+        
+        if (isNewUser) {
+          addDebug('🆕 New user detected! First time sign-in.')
+        } else {
+          addDebug('👋 Returning user sign-in.')
+        }
+        
         redirectToDashboard()
         return
       }

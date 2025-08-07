@@ -163,7 +163,7 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-green-400 font-space-grotesk flex items-center justify-center relative overflow-hidden">
+      <div className="min-h-screen bg-brutalist-light-gray dark:bg-brutalist-dark-gray font-space-grotesk flex items-center justify-center relative overflow-hidden">
         {/* Geometric Loading Background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
           <div className="absolute top-20 left-20 w-40 h-40 border-8 border-electric-500 animate-pulse"></div>
@@ -191,7 +191,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-green-400 font-space-grotesk relative overflow-hidden" style={{backgroundColor: '#000000', color: '#00ff00'}}>
+    <div className="min-h-screen bg-brutalist-light-gray dark:bg-brutalist-dark-gray font-space-grotesk relative overflow-hidden">
       {/* Ultra-Modern Geometric Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-15">
         <div className="absolute top-20 left-10 w-48 h-48 border-8 border-electric-500 animate-pulse shadow-brutal"></div>

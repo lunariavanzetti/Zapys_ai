@@ -72,7 +72,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Handle auth events
       if (event === 'SIGNED_IN') {
         console.log('🎉 AUTH CONTEXT: SIGNED_IN event')
-        toast.success('Welcome back!')
+        // Check if this is a new user (created in the last few seconds)
+        const userCreatedAt = new Date(session?.user?.created_at || '')
+        const now = new Date()
+        const isNewUser = (now.getTime() - userCreatedAt.getTime()) < 10000 // 10 seconds
+        
+        if (isNewUser) {
+          console.log('🆕 New user detected, first time login')
+          toast.success('Welcome to Zapys AI! Account created successfully.')
+        } else {
+          console.log('👋 Returning user, welcome back')
+          toast.success('Welcome back!')
+        }
       } else if (event === 'SIGNED_OUT') {
         console.log('👋 AUTH CONTEXT: SIGNED_OUT event')
         toast.success('Signed out successfully')

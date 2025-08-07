@@ -111,8 +111,8 @@ export default function AuthPage() {
       <div className="flex-1 flex items-center justify-center px-6 py-12 relative z-10">
         <div className="w-full max-w-lg">
           
-          {/* Redirect Notification Banner */}
-          {wasRedirected && (
+          {/* Redirect Notification Banner - Only show on SIGN IN page, not CREATE ACCOUNT */}
+          {wasRedirected && !isSignUp && (
             <div className="brutal-card p-6 mb-6 bg-electric-500 border-4 border-brutalist-black dark:border-brutalist-white shadow-brutal">
               <div className="flex items-center">
                 <Info className="h-6 w-6 text-brutalist-black mr-4 flex-shrink-0" />

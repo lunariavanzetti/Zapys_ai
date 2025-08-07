@@ -25,9 +25,10 @@ export default function AuthCallback() {
       hasRedirected = true
       addDebug('🎉 SUCCESS! Redirecting to dashboard!')
       setIsProcessing(false)
+      // Wait 2 seconds to give AuthContext time to process the session
       setTimeout(() => {
         navigate('/dashboard', { replace: true })
-      }, 1000)
+      }, 2000)
     }
 
     const redirectToAuthWithError = (error: string) => {

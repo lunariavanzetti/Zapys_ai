@@ -26,41 +26,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Force stop loading after 8 seconds max for better stability
+    // Force stop loading after 3 seconds max for faster response
     const maxLoadingTimeout = setTimeout(() => {
-      console.log('🚨 FORCE STOPPING AUTH LOADING - 8 second timeout')
+      console.log('🚨 FORCE STOPPING AUTH LOADING - 3 second timeout')
       setLoading(false)
-    }, 8000)
+    }, 3000)
 
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Get initial session immediately
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      console.log('🔥 AUTH CONTEXT: Initial session check', { session: !!session, error })
       setSession(session)
       setUser(session?.user ?? null)
       if (session?.user) {
+        console.log('✅ AUTH CONTEXT: User found, fetching profile')
         fetchUserProfile(session.user.id)
       } else {
+        console.log('❌ AUTH CONTEXT: No user, stopping loading')
         setLoading(false)
       }
+      clearTimeout(maxLoadingTimeout) // Clear timeout if we got a result
+    }).catch((error) => {
+      console.error('❌ AUTH CONTEXT: Session check failed', error)
+      setLoading(false)
+      clearTimeout(maxLoadingTimeout)
     })
 
     // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔔 AUTH CONTEXT: Auth state change', { event, session: !!session, userId: session?.user?.id })
       setSession(session)
       setUser(session?.user ?? null)
       
       if (session?.user) {
+        console.log('✅ AUTH CONTEXT: Session user found, fetching profile')
         await fetchUserProfile(session.user.id)
+        setLoading(false) // Stop loading once we have user
       } else {
+        console.log('❌ AUTH CONTEXT: No session user')
         setUserProfile(null)
         setLoading(false)
       }
 
       // Handle auth events
       if (event === 'SIGNED_IN') {
+        console.log('🎉 AUTH CONTEXT: SIGNED_IN event')
         toast.success('Welcome back!')
       } else if (event === 'SIGNED_OUT') {
+        console.log('👋 AUTH CONTEXT: SIGNED_OUT event')
         toast.success('Signed out successfully')
       }
     })

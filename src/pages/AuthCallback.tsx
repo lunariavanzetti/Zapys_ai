@@ -57,7 +57,31 @@ export default function AuthCallback() {
       return
     }
 
-    addDebug('Auth code detected - checking current session immediately...')
+    addDebug('Auth code detected - attempting manual code exchange...')
+
+    // Manual OAuth code exchange attempt
+    const exchangeCodeForSession = async () => {
+      try {
+        addDebug('🔄 Attempting to exchange OAuth code for session...')
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+        if (error) {
+          addDebug(`❌ Code exchange error: ${error.message}`)
+          return false
+        }
+        if (data?.session) {
+          addDebug('✅ Successfully exchanged code for session!')
+          return true
+        }
+        addDebug('⚠️ Code exchange returned no session')
+        return false
+      } catch (err) {
+        addDebug(`❌ Code exchange failed: ${err}`)
+        return false
+      }
+    }
+
+    // Try manual code exchange first
+    await exchangeCodeForSession()
 
     // Immediate session check
     const checkSession = async () => {
@@ -80,19 +104,27 @@ export default function AuthCallback() {
 
     checkSession()
 
-    // Periodic session checks every 2 seconds for OAuth flows
+    // Periodic session checks every 2 seconds for OAuth flows (max 5 checks)
     let checkInterval: NodeJS.Timeout | null = null
-    addDebug('Starting periodic session checks every 2 seconds...')
+    let checkCount = 0
+    const maxChecks = 5
+    addDebug('Starting periodic session checks every 2 seconds (max 5 checks)...')
     checkInterval = setInterval(async () => {
       if (hasRedirected) {
         if (checkInterval) clearInterval(checkInterval)
         return
       }
       
-      addDebug('🔄 Periodic session check...')
+      checkCount++
+      addDebug(`🔄 Periodic session check ${checkCount}/${maxChecks}...`)
       const found = await checkSession()
       if (found && checkInterval) {
         clearInterval(checkInterval)
+      }
+      
+      if (checkCount >= maxChecks) {
+        addDebug('🚨 Max periodic checks reached - stopping checks')
+        if (checkInterval) clearInterval(checkInterval)
       }
     }, 2000)
 
@@ -134,13 +166,27 @@ export default function AuthCallback() {
       if (!hasRedirected) {
         addDebug('⏰ 10 second timeout reached - checking session one more time...')
         // One final session check before giving up
-        supabase.auth.getSession().then(({ data: { session } }) => {
+        supabase.auth.getSession().then(async ({ data: { session } }) => {
           if (session) {
             addDebug('✅ Found session on final check!')
             redirectToDashboard()
           } else {
-            addDebug('❌ No session found after 10 seconds - redirecting to auth with error')
-            redirectToAuthWithError('timeout_no_session')
+            addDebug('❌ No session found after 10 seconds - trying one last code exchange...')
+            const exchangeSucceeded = await exchangeCodeForSession()
+            if (exchangeSucceeded) {
+              addDebug('✅ Final code exchange succeeded!')
+              // Check session one more time
+              const { data: { session: finalSession } } = await supabase.auth.getSession()
+              if (finalSession) {
+                redirectToDashboard()
+              } else {
+                addDebug('❌ Still no session after final exchange')
+                redirectToAuthWithError('final_exchange_failed')
+              }
+            } else {
+              addDebug('❌ Final code exchange failed - redirecting to auth')
+              redirectToAuthWithError('timeout_no_session')
+            }
           }
         })
       }

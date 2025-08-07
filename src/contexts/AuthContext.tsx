@@ -26,11 +26,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Force stop loading after 3 seconds max for faster response
+    // Force stop loading after 10 seconds for OAuth flows
     const maxLoadingTimeout = setTimeout(() => {
-      console.log('🚨 FORCE STOPPING AUTH LOADING - 3 second timeout')
+      console.log('🚨 FORCE STOPPING AUTH LOADING - 10 second timeout')
       setLoading(false)
-    }, 3000)
+    }, 10000)
 
     // Get initial session immediately
     supabase.auth.getSession().then(({ data: { session }, error }) => {
@@ -56,6 +56,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('🔔 AUTH CONTEXT: Auth state change', { event, session: !!session, userId: session?.user?.id })
+      console.log('🔔 AUTH CONTEXT: User email:', session?.user?.email)
+      console.log('🔔 AUTH CONTEXT: User created at:', session?.user?.created_at)
       setSession(session)
       setUser(session?.user ?? null)
       

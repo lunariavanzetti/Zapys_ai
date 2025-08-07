@@ -25,11 +25,11 @@ export default function AuthCallback() {
       hasRedirected = true
       addDebug('🎉 SUCCESS! Redirecting to dashboard!')
       setIsProcessing(false)
-      // Wait 4 seconds to give AuthContext time to process the session and create user profile
+      // Wait 2 seconds to give AuthContext time to process the session and create user profile
       setTimeout(() => {
         // Add a flag to indicate this came from auth callback to prevent redirect loops
         navigate('/dashboard?from_auth=true', { replace: true, state: null })
-      }, 4000)
+      }, 2000)
     }
 
     const redirectToAuthWithError = (error: string) => {
@@ -80,6 +80,22 @@ export default function AuthCallback() {
 
     checkSession()
 
+    // Periodic session checks every 2 seconds for OAuth flows
+    let checkInterval: NodeJS.Timeout | null = null
+    addDebug('Starting periodic session checks every 2 seconds...')
+    checkInterval = setInterval(async () => {
+      if (hasRedirected) {
+        if (checkInterval) clearInterval(checkInterval)
+        return
+      }
+      
+      addDebug('🔄 Periodic session check...')
+      const found = await checkSession()
+      if (found && checkInterval) {
+        clearInterval(checkInterval)
+      }
+    }, 2000)
+
     // Primary method: Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       addDebug(`🔔 Auth state change: ${event}`)
@@ -112,20 +128,30 @@ export default function AuthCallback() {
       }
     })
 
-    // Secondary method: Aggressive timeout fallback
-    addDebug('Setting up 3-second timeout fallback...')
+    // Secondary method: More patient timeout fallback for OAuth flows
+    addDebug('Setting up 10-second timeout fallback...')
     timeoutId = setTimeout(() => {
       if (!hasRedirected) {
-        addDebug('⏰ 3 second timeout reached - force redirecting!')
-        redirectToDashboard()
+        addDebug('⏰ 10 second timeout reached - checking session one more time...')
+        // One final session check before giving up
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session) {
+            addDebug('✅ Found session on final check!')
+            redirectToDashboard()
+          } else {
+            addDebug('❌ No session found after 10 seconds - redirecting to auth with error')
+            redirectToAuthWithError('timeout_no_session')
+          }
+        })
       }
-    }, 3000)
+    }, 10000)
 
     // Cleanup
     return () => {
       addDebug('🧹 Cleanup called')
       subscription.unsubscribe()
       if (timeoutId) clearTimeout(timeoutId)
+      if (checkInterval) clearInterval(checkInterval)
     }
   }, [navigate])
 

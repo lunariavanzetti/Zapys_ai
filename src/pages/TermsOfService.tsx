@@ -1,3 +1,5 @@
+import Footer from '../components/layout/Footer'
+
 export default function TermsOfService() {
   return (
     <div className="min-h-screen bg-brutalist-light-gray dark:bg-brutalist-dark-gray font-space-grotesk py-16 px-8">
@@ -160,6 +162,8 @@ export default function TermsOfService() {
           </div>
         </div>
       </div>
+      
+      <Footer />
     </div>
   )
 }

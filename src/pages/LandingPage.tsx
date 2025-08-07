@@ -2,6 +2,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { ArrowRight, Zap, BarChart3, Globe, Users, Target, DollarSign, FileText, TrendingUp } from 'lucide-react'
 import BrutalistThemeToggle from '../components/BrutalistThemeToggle'
+import Footer from '../components/layout/Footer'
 
 export default function LandingPage() {
   const navigate = useNavigate()
@@ -327,20 +328,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-20 px-6 border-t-8 border-brutalist-black dark:border-brutalist-white relative z-10">
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="flex items-center justify-center space-x-4 mb-8">
-            <div className="flex items-center justify-center w-16 h-16 bg-electric-500 border-4 border-brutalist-black dark:border-brutalist-white shadow-brutal">
-              <Zap className="h-8 w-8 text-brutalist-black" />
-            </div>
-            <span className="text-4xl font-black text-brutalist-black dark:text-brutalist-white uppercase tracking-tight">ZAPYS AI</span>
-          </div>
-          <p className="text-xl text-brutalist-gray font-bold uppercase tracking-widest">
-            © 2024 ZAPYS AI. ALL RIGHTS RESERVED. BUILT FOR FREELANCERS AND AGENCIES WORLDWIDE.
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

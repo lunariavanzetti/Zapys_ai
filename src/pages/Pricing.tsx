@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Check, Zap, Crown, Rocket, ArrowRight } from 'lucide-react'
+import Footer from '../components/layout/Footer'
 
 export default function Pricing() {
   const plans = [
@@ -266,6 +267,8 @@ export default function Pricing() {
           </div>
         </div>
       </div>
+      
+      <Footer />
     </div>
   )
 }

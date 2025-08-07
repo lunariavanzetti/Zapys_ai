@@ -1,3 +1,5 @@
+import Footer from '../components/layout/Footer'
+
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-brutalist-light-gray dark:bg-brutalist-dark-gray font-space-grotesk py-16 px-8">
@@ -211,6 +213,8 @@ export default function PrivacyPolicy() {
           </div>
         </div>
       </div>
+      
+      <Footer />
     </div>
   )
 }

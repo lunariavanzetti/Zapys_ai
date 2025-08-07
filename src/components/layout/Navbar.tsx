@@ -70,7 +70,7 @@ export default function Navbar() {
                   to={item.href}
                   className={`flex items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
                     isActive(item.href)
-                      ? 'bg-white/20 text-white dark:text-white'
+                      ? 'bg-white/20 text-brutalist-black dark:text-white'
                       : 'text-brutalist-black dark:text-white/70 hover:text-brutalist-black dark:hover:text-white hover:bg-white/10'
                   }`}
                 >
@@ -100,9 +100,9 @@ export default function Navbar() {
                 </div>
               </GlassButton>
               
-              {/* Dropdown with VERY HIGH Z-INDEX */}
+              {/* Dropdown with ULTRA HIGH Z-INDEX */}
               {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 z-[9999]" style={{zIndex: 9999}}>
+                <div className="absolute right-0 mt-2 w-48 z-[99999]" style={{zIndex: 99999}}>
                   <GlassCard className="p-2 space-y-1">
                     <div className="px-3 py-2 text-sm text-white/90">
                       <p className="font-medium">{userProfile?.full_name || user?.email?.split('@')[0] || 'User'}</p>
@@ -155,7 +155,7 @@ export default function Navbar() {
                     onClick={() => setIsOpen(false)}
                     className={`flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
                       isActive(item.href)
-                        ? 'bg-white/20 text-white dark:text-white'
+                        ? 'bg-white/20 text-brutalist-black dark:text-white'
                         : 'text-brutalist-black dark:text-white/70 hover:text-brutalist-black dark:hover:text-white hover:bg-white/10'
                     }`}
                   >

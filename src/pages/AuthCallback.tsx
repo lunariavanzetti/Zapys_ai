@@ -14,12 +14,18 @@ export default function AuthCallback() {
         console.log('🔥 AUTH CALLBACK: Starting auth callback process')
         console.log('🔥 AUTH CALLBACK: URL:', window.location.href)
         
+        // Check Supabase configuration
+        console.log('🔥 AUTH CALLBACK: Supabase URL:', import.meta.env.VITE_SUPABASE_URL ? 'SET' : 'MISSING')
+        console.log('🔥 AUTH CALLBACK: Supabase Key:', import.meta.env.VITE_SUPABASE_ANON_KEY ? 'SET' : 'MISSING')
+        console.log('🔥 AUTH CALLBACK: App URL:', import.meta.env.VITE_APP_URL)
+        
         // Check for URL parameters
         const urlParams = new URLSearchParams(window.location.search)
         const code = urlParams.get('code')
         const error = urlParams.get('error')
         
         console.log('🔥 AUTH CALLBACK: OAuth code present:', !!code)
+        console.log('🔥 AUTH CALLBACK: OAuth code length:', code?.length || 0)
         console.log('🔥 AUTH CALLBACK: Error in URL:', error)
         
         if (error) {
@@ -37,6 +43,25 @@ export default function AuthCallback() {
         }
 
         console.log('🔥 AUTH CALLBACK: Attempting to get session...')
+        
+        // Test Supabase connectivity first
+        console.log('🔥 AUTH CALLBACK: Testing Supabase connectivity...')
+        try {
+          const startTime = Date.now()
+          const healthCheck = await Promise.race([
+            fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/`, {
+              method: 'HEAD',
+              headers: {
+                'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
+              }
+            }),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Network timeout')), 3000))
+          ]) as Response
+          const responseTime = Date.now() - startTime
+          console.log('🔥 AUTH CALLBACK: Supabase connectivity:', healthCheck.status, `(${responseTime}ms)`)
+        } catch (connectivityError) {
+          console.error('🔥 AUTH CALLBACK: Supabase connectivity failed:', connectivityError)
+        }
         
         // First try manual code exchange with timeout (more reliable for OAuth)
         try {

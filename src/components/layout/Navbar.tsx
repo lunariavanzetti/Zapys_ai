@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Menu, X, Zap, Plus, BarChart3, Settings, LogOut, User } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
+import GlassCard from '../ui/GlassCard'
+import GlassButton from '../ui/GlassButton'
 import BrutalistThemeToggle from '../BrutalistThemeToggle'
 
 export default function Navbar() {
@@ -47,32 +49,32 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-6">
-      <div className="brutal-card mx-auto max-w-7xl px-8 py-4 hover-lift">
+    <nav className="fixed top-0 left-0 right-0 z-50 px-4 py-4">
+      <GlassCard className="mx-auto max-w-7xl px-6 py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/dashboard" className="flex items-center space-x-4">
-            <div className="flex items-center justify-center w-16 h-16 bg-electric-500 border-4 border-brutalist-black dark:border-brutalist-white shadow-brutal hover:animate-spin">
-              <Zap className="h-8 w-8 text-brutalist-black" />
+          <Link to="/dashboard" className="flex items-center space-x-2">
+            <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600">
+              <Zap className="h-5 w-5 text-white" />
             </div>
-            <span className="text-4xl font-black text-brutalist-black dark:text-brutalist-white uppercase tracking-tight">ZAPYS AI</span>
+            <span className="text-xl font-bold text-white">Zapys AI</span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-1">
             {navigation.map((item) => {
               const Icon = item.icon
               return (
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center px-6 py-4 border-2 font-black uppercase tracking-wider text-sm transition-all duration-300 hover-lift ${
+                  className={`flex items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
                     isActive(item.href)
-                      ? 'bg-electric-500 text-brutalist-black border-brutalist-black dark:border-brutalist-white shadow-brutal'
-                      : 'bg-brutalist-white dark:bg-brutalist-black text-brutalist-black dark:text-brutalist-white border-brutalist-black dark:border-brutalist-white hover:bg-electric-500 hover:text-brutalist-black shadow-brutal'
+                      ? 'bg-white/20 text-white'
+                      : 'text-white/70 hover:text-white hover:bg-white/10'
                   }`}
                 >
-                  <Icon className="h-5 w-5 mr-2" />
+                  <Icon className="h-4 w-4 mr-2" />
                   {item.name}
                 </Link>
               )
@@ -80,53 +82,49 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Actions */}
-          <div className="hidden md:flex items-center space-x-6">
+          <div className="hidden md:flex items-center space-x-3">
             <BrutalistThemeToggle />
             
             {/* User Menu */}
             <div className="relative" ref={dropdownRef}>
-              <button
+              <GlassButton 
+                variant="ghost" 
+                size="sm" 
+                className="p-2"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center space-x-3 px-6 py-4 bg-brutalist-white dark:bg-brutalist-black border-2 border-brutalist-black dark:border-brutalist-white shadow-brutal hover-lift font-black uppercase tracking-wider text-sm transition-all duration-300 hover:bg-electric-500 hover:text-brutalist-black"
               >
-                <div className="w-8 h-8 bg-electric-500 border-2 border-brutalist-black dark:border-brutalist-white shadow-brutal flex items-center justify-center">
-                  <User className="h-4 w-4 text-brutalist-black" />
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 flex items-center justify-center">
+                  <span className="text-sm font-medium text-white">
+                    {userProfile?.full_name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
+                  </span>
                 </div>
-                <span className="text-brutalist-black dark:text-brutalist-white">
-                  {userProfile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'USER'}
-                </span>
-              </button>
+              </GlassButton>
               
-              {/* Dropdown */}
+              {/* Dropdown with VERY HIGH Z-INDEX */}
               {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-72 z-50">
-                  <div className="brutal-card p-6 space-y-4 hover-lift">
-                    <div className="px-4 py-3 border-2 border-brutalist-black dark:border-brutalist-white bg-electric-500 shadow-brutal">
-                      <p className="font-black text-brutalist-black uppercase tracking-wider text-sm">
-                        {userProfile?.full_name || user?.email?.split('@')[0] || 'USER'}
-                      </p>
-                      <p className="text-brutalist-black text-xs font-bold">
-                        {user?.email}
-                      </p>
+                <div className="absolute right-0 mt-2 w-48 z-[9999]" style={{zIndex: 9999}}>
+                  <GlassCard className="p-2 space-y-1">
+                    <div className="px-3 py-2 text-sm text-white/90">
+                      <p className="font-medium">{userProfile?.full_name || user?.email?.split('@')[0] || 'User'}</p>
+                      <p className="text-white/60 text-xs">{user?.email}</p>
                     </div>
-                    
+                    <hr className="border-white/20" />
                     <Link
                       to="/settings"
                       onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center w-full px-4 py-3 bg-brutalist-white dark:bg-brutalist-black border-2 border-brutalist-black dark:border-brutalist-white shadow-brutal hover-lift transition-all duration-300 hover:bg-electric-500 hover:text-brutalist-black font-black uppercase tracking-wider text-sm text-brutalist-black dark:text-brutalist-white"
+                      className="flex items-center px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
                     >
-                      <Settings className="h-5 w-5 mr-3" />
-                      SETTINGS
+                      <Settings className="h-4 w-4 mr-2" />
+                      Settings
                     </Link>
-                    
                     <button
                       onClick={handleSignOut}
-                      className="flex items-center w-full px-4 py-3 bg-brutalist-white dark:bg-brutalist-black border-2 border-brutalist-black dark:border-brutalist-white shadow-brutal hover-lift transition-all duration-300 hover:bg-electric-500 hover:text-brutalist-black font-black uppercase tracking-wider text-sm text-brutalist-black dark:text-brutalist-white"
+                      className="flex items-center w-full px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
                     >
-                      <LogOut className="h-5 w-5 mr-3" />
-                      SIGN OUT
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
                     </button>
-                  </div>
+                  </GlassCard>
                 </div>
               )}
             </div>
@@ -134,19 +132,20 @@ export default function Navbar() {
 
           {/* Mobile menu button */}
           <div className="md:hidden">
-            <button
+            <GlassButton
+              variant="ghost"
+              size="sm"
               onClick={() => setIsOpen(!isOpen)}
-              className="flex items-center justify-center w-12 h-12 bg-electric-500 border-2 border-brutalist-black dark:border-brutalist-white shadow-brutal hover-lift"
             >
-              {isOpen ? <X className="h-6 w-6 text-brutalist-black" /> : <Menu className="h-6 w-6 text-brutalist-black" />}
-            </button>
+              {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </GlassButton>
           </div>
         </div>
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="md:hidden mt-6 pt-6 border-t-4 border-brutalist-black dark:border-brutalist-white">
-            <div className="space-y-4">
+          <div className="md:hidden mt-4 pt-4 border-t border-white/20">
+            <div className="space-y-2">
               {navigation.map((item) => {
                 const Icon = item.icon
                 return (
@@ -154,36 +153,36 @@ export default function Navbar() {
                     key={item.name}
                     to={item.href}
                     onClick={() => setIsOpen(false)}
-                    className={`flex items-center px-4 py-4 border-2 border-brutalist-black dark:border-brutalist-white shadow-brutal hover-lift font-black uppercase tracking-wider text-sm transition-all duration-300 ${
+                    className={`flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
                       isActive(item.href)
-                        ? 'bg-electric-500 text-brutalist-black'
-                        : 'bg-brutalist-white dark:bg-brutalist-black text-brutalist-black dark:text-brutalist-white hover:bg-electric-500 hover:text-brutalist-black'
+                        ? 'bg-white/20 text-white'
+                        : 'text-white/70 hover:text-white hover:bg-white/10'
                     }`}
                   >
-                    <Icon className="h-5 w-5 mr-3" />
+                    <Icon className="h-4 w-4 mr-3" />
                     {item.name}
                   </Link>
                 )
               })}
               
-              <div className="border-t-2 border-brutalist-black dark:border-brutalist-white pt-4 mt-4">
-                <div className="flex items-center justify-between px-4 py-3 bg-brutalist-white dark:bg-brutalist-black border-2 border-brutalist-black dark:border-brutalist-white shadow-brutal mb-4">
-                  <span className="font-black text-brutalist-black dark:text-brutalist-white uppercase tracking-wider text-sm">THEME</span>
-                  <BrutalistThemeToggle />
-                </div>
-                
-                <button
-                  onClick={handleSignOut}
-                  className="flex items-center w-full px-4 py-4 bg-brutalist-white dark:bg-brutalist-black border-2 border-brutalist-black dark:border-brutalist-white shadow-brutal hover-lift transition-all duration-300 hover:bg-electric-500 hover:text-brutalist-black font-black uppercase tracking-wider text-sm text-brutalist-black dark:text-brutalist-white"
-                >
-                  <LogOut className="h-5 w-5 mr-3" />
-                  SIGN OUT
-                </button>
+              <hr className="border-white/20 my-3" />
+              
+              <div className="flex items-center justify-between px-4 py-2">
+                <span className="text-sm text-white/70">Theme</span>
+                <BrutalistThemeToggle />
               </div>
+              
+              <button
+                onClick={handleSignOut}
+                className="flex items-center w-full px-4 py-3 text-sm text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
+              >
+                <LogOut className="h-4 w-4 mr-3" />
+                Sign Out
+              </button>
             </div>
           </div>
         )}
-      </div>
+      </GlassCard>
     </nav>
   )
 }

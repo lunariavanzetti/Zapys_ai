@@ -53,8 +53,8 @@
 
 /* Dark Mode Overrides */
 .dark {
-  --brutal-light-gray: var(--brutal-dark-gray);
-  --brutal-dark-gray: #f5f5f5;
+  --brutal-light-gray: #1a1a1a;
+  --brutal-dark-gray: #1a1a1a;
   --shadow-brutal-sm: 2px 2px 0px var(--brutal-white);
   --shadow-brutal: 4px 4px 0px var(--brutal-white);
   --shadow-brutal-lg: 8px 8px 0px var(--brutal-white);

@@ -80,10 +80,7 @@ export default function AuthCallback() {
       }
     }
 
-    // Try manual code exchange first
-    await exchangeCodeForSession()
-
-    // Immediate session check
+    // Immediate session check function
     const checkSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession()
@@ -102,7 +99,13 @@ export default function AuthCallback() {
       return false
     }
 
-    checkSession()
+    // Try manual code exchange first, then check session
+    const initializeAuth = async () => {
+      await exchangeCodeForSession()
+      await checkSession()
+    }
+    
+    initializeAuth()
 
     // Periodic session checks every 2 seconds for OAuth flows (max 5 checks)
     let checkInterval: NodeJS.Timeout | null = null

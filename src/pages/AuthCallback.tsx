@@ -18,6 +18,9 @@ export default function AuthCallback() {
         console.log('🔥 AUTH CALLBACK: Supabase URL:', import.meta.env.VITE_SUPABASE_URL ? 'SET' : 'MISSING')
         console.log('🔥 AUTH CALLBACK: Supabase Key:', import.meta.env.VITE_SUPABASE_ANON_KEY ? 'SET' : 'MISSING')
         console.log('🔥 AUTH CALLBACK: App URL:', import.meta.env.VITE_APP_URL)
+        console.log('🔥 AUTH CALLBACK: Expected Google OAuth Redirect URL should be:')
+        console.log(`🔥 AUTH CALLBACK: ${import.meta.env.VITE_SUPABASE_URL}/auth/v1/callback`)
+        console.log('🔥 AUTH CALLBACK: Make sure this URL is set in Google OAuth settings!')
         
         // Check for URL parameters
         const urlParams = new URLSearchParams(window.location.search)

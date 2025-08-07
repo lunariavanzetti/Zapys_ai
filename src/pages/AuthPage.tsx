@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, Navigate, useLocation } from 'react-router-dom'
 import { Mail, Lock, User, Zap, AlertCircle, Info } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
@@ -23,7 +23,29 @@ export default function AuthPage() {
   
   // Check if user was redirected here (trying to access protected content)
   const wasRedirected = location.state?.from
-  const redirectMessage = wasRedirected ? `Please sign in to access ${from}` : null
+  
+  // Check for error messages from redirects
+  const urlParams = new URLSearchParams(location.search)
+  const errorParam = urlParams.get('error')
+  const [errorMessage, setErrorMessage] = useState('')
+
+  useEffect(() => {
+    if (errorParam) {
+      switch (errorParam) {
+        case 'callback_failed':
+          setErrorMessage('Authentication failed. Please try again.')
+          break
+        case 'no_session':
+          setErrorMessage('Login session expired. Please sign in again.')
+          break
+        case 'unexpected':
+          setErrorMessage('Something went wrong. Please try again.')
+          break
+        default:
+          setErrorMessage('Please sign in to continue.')
+      }
+    }
+  }, [errorParam])
 
   // Redirect if already authenticated
   if (user) {
@@ -111,8 +133,25 @@ export default function AuthPage() {
       <div className="flex-1 flex items-center justify-center px-6 py-12 relative z-10">
         <div className="w-full max-w-lg">
           
+          {/* Error Message Banner */}
+          {errorMessage && (
+            <div className="brutal-card p-6 mb-6 bg-red-500 border-4 border-brutalist-black dark:border-brutalist-white shadow-brutal">
+              <div className="flex items-center">
+                <AlertCircle className="h-6 w-6 text-brutalist-black mr-4 flex-shrink-0" />
+                <div>
+                  <h3 className="font-black text-brutalist-black text-lg uppercase tracking-wider mb-2">
+                    ERROR
+                  </h3>
+                  <p className="font-bold text-brutalist-black text-sm uppercase tracking-wider">
+                    {errorMessage}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Redirect Notification Banner - Only show on SIGN IN page, not CREATE ACCOUNT */}
-          {wasRedirected && !isSignUp && (
+          {wasRedirected && !isSignUp && !errorMessage && (
             <div className="brutal-card p-6 mb-6 bg-electric-500 border-4 border-brutalist-black dark:border-brutalist-white shadow-brutal">
               <div className="flex items-center">
                 <Info className="h-6 w-6 text-brutalist-black mr-4 flex-shrink-0" />

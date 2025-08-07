@@ -26,75 +26,78 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Force stop loading after 10 seconds for OAuth flows
-    const maxLoadingTimeout = setTimeout(() => {
-      console.log('🚨 FORCE STOPPING AUTH LOADING - 10 second timeout')
-      setLoading(false)
-    }, 10000)
+    let mounted = true
 
-    // Get initial session immediately
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      console.log('🔥 AUTH CONTEXT: Initial session check', { session: !!session, error })
-      setSession(session)
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        console.log('✅ AUTH CONTEXT: User found, fetching profile')
-        fetchUserProfile(session.user.id)
-      } else {
-        console.log('❌ AUTH CONTEXT: No user, stopping loading')
+    // Get initial session
+    const initializeAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (!mounted) return
+        
+        if (error) {
+          console.error('Session check error:', error)
+          setLoading(false)
+          return
+        }
+
+        setSession(session)
+        setUser(session?.user ?? null)
+        
+        if (session?.user) {
+          await fetchUserProfile(session.user.id)
+        }
+        
         setLoading(false)
+      } catch (error) {
+        console.error('Auth initialization error:', error)
+        if (mounted) {
+          setLoading(false)
+        }
       }
-      clearTimeout(maxLoadingTimeout) // Clear timeout if we got a result
-    }).catch((error) => {
-      console.error('❌ AUTH CONTEXT: Session check failed', error)
-      setLoading(false)
-      clearTimeout(maxLoadingTimeout)
-    })
+    }
+
+    initializeAuth()
 
     // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('🔔 AUTH CONTEXT: Auth state change', { event, session: !!session, userId: session?.user?.id })
-      console.log('🔔 AUTH CONTEXT: User email:', session?.user?.email)
-      console.log('🔔 AUTH CONTEXT: User created at:', session?.user?.created_at)
+      if (!mounted) return
+
+      console.log('Auth state change:', event, session?.user?.email)
+      
       setSession(session)
       setUser(session?.user ?? null)
       
       if (session?.user) {
-        console.log('✅ AUTH CONTEXT: Session user found, fetching profile')
         await fetchUserProfile(session.user.id)
-        setLoading(false) // Stop loading once we have user
-      } else {
-        console.log('❌ AUTH CONTEXT: No session user')
-        setUserProfile(null)
-        setLoading(false)
-      }
-
-      // Handle auth events
-      if (event === 'SIGNED_IN') {
-        console.log('🎉 AUTH CONTEXT: SIGNED_IN event')
-        // Check if this is a new user (created in the last few seconds)
-        const userCreatedAt = new Date(session?.user?.created_at || '')
-        const now = new Date()
-        const isNewUser = (now.getTime() - userCreatedAt.getTime()) < 10000 // 10 seconds
         
-        if (isNewUser) {
-          console.log('🆕 New user detected, first time login')
-          toast.success('Welcome to Zapys AI! Account created successfully.')
-        } else {
-          console.log('👋 Returning user, welcome back')
-          toast.success('Welcome back!')
+        // Show welcome message
+        if (event === 'SIGNED_IN') {
+          const userCreatedAt = new Date(session.user.created_at)
+          const now = new Date()
+          const isNewUser = (now.getTime() - userCreatedAt.getTime()) < 30000 // 30 seconds
+          
+          if (isNewUser) {
+            toast.success('Welcome to Zapys AI! Account created successfully.')
+          } else {
+            toast.success('Welcome back!')
+          }
         }
-      } else if (event === 'SIGNED_OUT') {
-        console.log('👋 AUTH CONTEXT: SIGNED_OUT event')
-        toast.success('Signed out successfully')
+      } else {
+        setUserProfile(null)
+        if (event === 'SIGNED_OUT') {
+          toast.success('Signed out successfully')
+        }
       }
+      
+      setLoading(false)
     })
 
     return () => {
+      mounted = false
       subscription.unsubscribe()
-      clearTimeout(maxLoadingTimeout)
     }
   }, [])
 

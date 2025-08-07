@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, Navigate, useLocation } from 'react-router-dom'
-import { Mail, Lock, User, Zap } from 'lucide-react'
+import { Mail, Lock, User, Zap, AlertCircle, Info } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import GlassCard from '../components/ui/GlassCard'
 import GlassButton from '../components/ui/GlassButton'
@@ -20,6 +20,10 @@ export default function AuthPage() {
   const { user, signIn, signUp, signInWithGoogle, signInWithApple } = useAuth()
   const location = useLocation()
   const from = (location.state as any)?.from?.pathname || '/dashboard'
+  
+  // Check if user was redirected here (trying to access protected content)
+  const wasRedirected = location.state?.from
+  const redirectMessage = wasRedirected ? `Please sign in to access ${from}` : null
 
   // Redirect if already authenticated
   if (user) {
@@ -106,6 +110,42 @@ export default function AuthPage() {
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-6 py-12 relative z-10">
         <div className="w-full max-w-lg">
+          
+          {/* Redirect Notification Banner */}
+          {wasRedirected && (
+            <div className="brutal-card p-6 mb-6 bg-electric-500 border-4 border-brutalist-black dark:border-brutalist-white shadow-brutal">
+              <div className="flex items-center">
+                <Info className="h-6 w-6 text-brutalist-black mr-4 flex-shrink-0" />
+                <div>
+                  <h3 className="font-black text-brutalist-black text-lg uppercase tracking-wider mb-2">
+                    AUTHENTICATION REQUIRED
+                  </h3>
+                  <p className="font-bold text-brutalist-black text-sm uppercase tracking-wider">
+                    {from.includes('/settings') && 'TO VIEW PRICING AND ACCOUNT SETTINGS, '}
+                    {from.includes('/dashboard') && 'TO ACCESS YOUR DASHBOARD, '}
+                    {from.includes('/analytics') && 'TO VIEW ANALYTICS, '}
+                    {from.includes('/create') && 'TO CREATE PROPOSALS, '}
+                    YOU NEED TO SIGN IN OR CREATE A FREE ACCOUNT FIRST
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Free Trial Notice */}
+          <div className="brutal-card p-6 mb-6 bg-electric-500 bg-opacity-20 border-2 border-electric-500 hover-lift">
+            <div className="flex items-center">
+              <Zap className="h-6 w-6 text-electric-500 mr-4 animate-pulse" />
+              <div>
+                <h3 className="font-black text-brutalist-black dark:text-brutalist-white text-lg uppercase tracking-wider mb-1">
+                  🎉 START YOUR FREE TRIAL
+                </h3>
+                <p className="font-bold text-brutalist-black dark:text-brutalist-white text-sm uppercase tracking-wider">
+                  7 DAYS FREE • NO CREDIT CARD REQUIRED • CANCEL ANYTIME
+                </p>
+              </div>
+            </div>
+          </div>
           <div className="brutal-card p-10 hover-lift">
             {/* Header */}
             <div className="text-center mb-10">
@@ -248,13 +288,13 @@ export default function AuthPage() {
               <div className="mt-6 p-4 border-2 border-electric-500 bg-electric-500 bg-opacity-10">
                 <p className="text-xs text-brutalist-black dark:text-brutalist-white text-center font-bold uppercase tracking-wide leading-relaxed">
                   BY CREATING AN ACCOUNT, YOU AGREE TO OUR{' '}
-                  <a href="#" className="text-electric-500 hover:text-electric-400 font-black underline decoration-2 underline-offset-2">
+                  <Link to="/terms" className="text-electric-500 hover:text-electric-400 font-black underline decoration-2 underline-offset-2">
                     TERMS OF SERVICE
-                  </a>{' '}
+                  </Link>{' '}
                   AND{' '}
-                  <a href="#" className="text-electric-500 hover:text-electric-400 font-black underline decoration-2 underline-offset-2">
+                  <Link to="/privacy" className="text-electric-500 hover:text-electric-400 font-black underline decoration-2 underline-offset-2">
                     PRIVACY POLICY
-                  </a>
+                  </Link>
                 </p>
               </div>
             )}

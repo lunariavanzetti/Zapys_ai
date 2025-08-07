@@ -15,6 +15,7 @@ import AuthCallback from './pages/AuthCallback'
 import TermsOfService from './pages/TermsOfService'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import RefundPolicy from './pages/RefundPolicy'
+import Pricing from './pages/Pricing'
 import { Agent3Test } from './pages/Agent3Test'
 import { Agent1Test } from './pages/Agent1Test'
 import TestRoute from './pages/TestRoute'
@@ -33,10 +34,11 @@ function App() {
               <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/proposal/:slug" element={<ProposalView />} />
               
-              {/* Legal pages */}
+              {/* Legal and info pages */}
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/refund-policy" element={<RefundPolicy />} />
+              <Route path="/pricing" element={<Pricing />} />
               
               {/* Agent test routes (simplified auth) */}
               <Route path="/test/route" element={<AppLayout><TestRoute /></AppLayout>} />

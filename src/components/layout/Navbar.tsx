@@ -104,22 +104,22 @@ export default function Navbar() {
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 z-[99999]" style={{zIndex: 99999}}>
                   <GlassCard className="p-2 space-y-1">
-                    <div className="px-3 py-2 text-sm text-white/90">
+                    <div className="px-3 py-2 text-sm text-brutalist-black dark:text-white/90">
                       <p className="font-medium">{userProfile?.full_name || user?.email?.split('@')[0] || 'User'}</p>
-                      <p className="text-white/60 text-xs">{user?.email}</p>
+                      <p className="text-brutalist-black/60 dark:text-white/60 text-xs">{user?.email}</p>
                     </div>
-                    <hr className="border-white/20" />
+                    <hr className="border-brutalist-black/20 dark:border-white/20" />
                     <Link
                       to="/settings"
                       onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
+                      className="flex items-center px-3 py-2 text-sm text-brutalist-black/70 dark:text-white/70 hover:text-brutalist-black dark:hover:text-white hover:bg-brutalist-black/10 dark:hover:bg-white/10 rounded-xl transition-colors"
                     >
                       <Settings className="h-4 w-4 mr-2" />
                       Settings
                     </Link>
                     <button
                       onClick={handleSignOut}
-                      className="flex items-center w-full px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
+                      className="flex items-center w-full px-3 py-2 text-sm text-brutalist-black/70 dark:text-white/70 hover:text-brutalist-black dark:hover:text-white hover:bg-brutalist-black/10 dark:hover:bg-white/10 rounded-xl transition-colors"
                     >
                       <LogOut className="h-4 w-4 mr-2" />
                       Sign Out

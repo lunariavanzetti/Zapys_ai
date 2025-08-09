@@ -264,29 +264,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('👋 Signing out...')
       console.log('👋 Current user before signout:', user?.email)
       
-      // Always clear local state first
-      console.log('🧹 Clearing local auth state immediately...')
+      // First call Supabase signOut to clear server-side session
+      console.log('👋 Calling Supabase signOut to clear server session...')
+      const { error } = await supabase.auth.signOut({ scope: 'global' })
+      
+      if (error) {
+        console.warn('⚠️ Supabase signOut error:', error.message)
+      } else {
+        console.log('✅ Supabase signOut completed successfully')
+      }
+      
+      // Then clear Supabase-related storage manually
+      console.log('🧹 Clearing Supabase storage...')
+      const supabaseKeys = Object.keys(localStorage).filter(key => 
+        key.startsWith('supabase') || key.startsWith('sb-')
+      )
+      supabaseKeys.forEach(key => {
+        console.log('🧹 Removing localStorage key:', key)
+        localStorage.removeItem(key)
+      })
+      
+      const sessionKeys = Object.keys(sessionStorage).filter(key => 
+        key.startsWith('supabase') || key.startsWith('sb-')
+      )
+      sessionKeys.forEach(key => {
+        console.log('🧹 Removing sessionStorage key:', key)
+        sessionStorage.removeItem(key)
+      })
+      
+      // Clear local React state
+      console.log('🧹 Clearing local auth state...')
       setUser(null)
       setSession(null)  
       setUserProfile(null)
       setLoading(false)
       
-      // Then try Supabase signOut
-      console.log('👋 Calling Supabase signOut...')
-      const { error } = await supabase.auth.signOut()
-      
-      if (error) {
-        console.warn('⚠️ Supabase signOut error (but local state already cleared):', error.message)
-        // Don't throw error since local state is already cleared
-      } else {
-        console.log('✅ Supabase signOut completed successfully')
-      }
-      
       console.log('✅ Sign out process completed')
       
     } catch (error) {
-      console.warn('⚠️ Sign out exception (but local state cleared):', error)
-      // Don't throw error since local state is cleared
+      console.warn('⚠️ Sign out exception:', error)
+      
+      // Even if Supabase fails, clear Supabase storage and state
+      console.log('🧹 Force clearing Supabase storage due to error...')
+      const supabaseKeys = Object.keys(localStorage).filter(key => 
+        key.startsWith('supabase') || key.startsWith('sb-')
+      )
+      supabaseKeys.forEach(key => localStorage.removeItem(key))
+      
+      const sessionKeys = Object.keys(sessionStorage).filter(key => 
+        key.startsWith('supabase') || key.startsWith('sb-')
+      )
+      sessionKeys.forEach(key => sessionStorage.removeItem(key))
+      setUser(null)
+      setSession(null)  
+      setUserProfile(null)
+      setLoading(false)
     }
   }
 

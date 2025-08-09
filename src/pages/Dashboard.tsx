@@ -69,7 +69,7 @@ export default function Dashboard() {
     }
 
     return () => clearTimeout(forceStopLoading)
-  }, [user, stats])
+  }, [user])
 
   const loadDashboardData = async () => {
     if (!user) {

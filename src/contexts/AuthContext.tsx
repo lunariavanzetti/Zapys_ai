@@ -260,66 +260,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
+    console.log('👋 STARTING SIGN OUT...')
+    
+    // Immediately clear React state to stop infinite loops
+    console.log('🧹 Clearing React state immediately...')
+    setUser(null)
+    setSession(null)  
+    setUserProfile(null)
+    setLoading(false)
+    
     try {
-      console.log('👋 Signing out...')
-      console.log('👋 Current user before signout:', user?.email)
+      // Clear Supabase storage
+      console.log('🧹 Clearing Supabase storage...')
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('supabase') || key.startsWith('sb-')) {
+          localStorage.removeItem(key)
+        }
+      })
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.startsWith('supabase') || key.startsWith('sb-')) {
+          sessionStorage.removeItem(key)
+        }
+      })
       
-      // First call Supabase signOut to clear server-side session
-      console.log('👋 Calling Supabase signOut to clear server session...')
+      // Call Supabase signOut
+      console.log('👋 Calling Supabase signOut...')
       const { error } = await supabase.auth.signOut({ scope: 'global' })
       
       if (error) {
-        console.warn('⚠️ Supabase signOut error:', error.message)
+        console.warn('⚠️ Supabase signOut error (but state already cleared):', error.message)
       } else {
-        console.log('✅ Supabase signOut completed successfully')
+        console.log('✅ Supabase signOut completed')
       }
       
-      // Then clear Supabase-related storage manually
-      console.log('🧹 Clearing Supabase storage...')
-      const supabaseKeys = Object.keys(localStorage).filter(key => 
-        key.startsWith('supabase') || key.startsWith('sb-')
-      )
-      supabaseKeys.forEach(key => {
-        console.log('🧹 Removing localStorage key:', key)
-        localStorage.removeItem(key)
-      })
-      
-      const sessionKeys = Object.keys(sessionStorage).filter(key => 
-        key.startsWith('supabase') || key.startsWith('sb-')
-      )
-      sessionKeys.forEach(key => {
-        console.log('🧹 Removing sessionStorage key:', key)
-        sessionStorage.removeItem(key)
-      })
-      
-      // Clear local React state
-      console.log('🧹 Clearing local auth state...')
-      setUser(null)
-      setSession(null)  
-      setUserProfile(null)
-      setLoading(false)
-      
-      console.log('✅ Sign out process completed')
-      
     } catch (error) {
-      console.warn('⚠️ Sign out exception:', error)
-      
-      // Even if Supabase fails, clear Supabase storage and state
-      console.log('🧹 Force clearing Supabase storage due to error...')
-      const supabaseKeys = Object.keys(localStorage).filter(key => 
-        key.startsWith('supabase') || key.startsWith('sb-')
-      )
-      supabaseKeys.forEach(key => localStorage.removeItem(key))
-      
-      const sessionKeys = Object.keys(sessionStorage).filter(key => 
-        key.startsWith('supabase') || key.startsWith('sb-')
-      )
-      sessionKeys.forEach(key => sessionStorage.removeItem(key))
-      setUser(null)
-      setSession(null)  
-      setUserProfile(null)
-      setLoading(false)
+      console.warn('⚠️ Sign out exception (but state cleared):', error)
     }
+    
+    console.log('✅ SIGN OUT COMPLETED')
   }
 
   const updateProfile = async (updates: Partial<Tables<'users'>>) => {

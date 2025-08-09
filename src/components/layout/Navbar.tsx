@@ -42,13 +42,31 @@ export default function Navbar() {
 
   const handleSignOut = async () => {
     try {
-      console.log('🚨 Starting sign out process...')
-      await signOut()
+      console.log('🚨 Navbar: Starting sign out process...')
+      console.log('🚨 Navbar: Current user before signout:', user?.email)
+      
+      // Close dropdown first
       setIsDropdownOpen(false)
-      console.log('✅ Sign out successful, redirecting to home...')
+      
+      // Call signOut from AuthContext
+      console.log('🚨 Navbar: Calling AuthContext.signOut()...')
+      await signOut()
+      
+      console.log('✅ Navbar: SignOut completed, redirecting to home...')
+      
+      // Force navigation to home page
       navigate('/', { replace: true })
+      
+      // Force page reload to ensure clean state
+      setTimeout(() => {
+        console.log('🔄 Navbar: Force reloading page for clean state...')
+        window.location.href = '/'
+      }, 100)
+      
     } catch (error) {
-      console.error('❌ Sign out error:', error)
+      console.error('❌ Navbar: Sign out error details:', error)
+      // Even if error, try to redirect anyway
+      navigate('/', { replace: true })
     }
   }
 

@@ -11,10 +11,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true,
-    redirectTo: import.meta.env.VITE_APP_URL ? `${import.meta.env.VITE_APP_URL}/auth/callback` : (typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined),
-    flowType: 'pkce',
-    debug: true // Add debug logging
+    detectSessionInUrl: false, // Let us handle URL detection manually
+    flowType: 'pkce'
   }
 })
 

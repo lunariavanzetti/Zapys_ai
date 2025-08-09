@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.warn('⚠️ Auth initialization timeout - forcing loading to false')
         setLoading(false)
       }
-    }, 10000) // 10 second timeout
+    }, 8000) // 8 second timeout
 
     // Initialize auth
     const initializeAuth = async () => {
@@ -144,23 +144,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('👤 Fetching user profile for userId:', userId)
       console.log('👤 Supabase URL:', import.meta.env.VITE_SUPABASE_URL)
-      console.log('👤 Starting database query...')
+      console.log('👤 Starting database query with 5-second timeout...')
       
       const startTime = Date.now()
-      const { data, error } = await supabase
+      
+      // Add timeout to prevent hanging
+      const queryPromise = supabase
         .from('users')
         .select('*')
         .eq('id', userId)
         .single()
+      
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Database query timeout')), 5000)
+      )
+      
+      const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any
       
       const queryTime = Date.now() - startTime
       console.log(`👤 Database query completed in ${queryTime}ms`)
       console.log('👤 Query result - data:', data)
       console.log('👤 Query result - error:', error)
 
+      if (error && error.message === 'Database query timeout') {
+        console.log('⏰ Database query timed out - continuing without profile')
+        setUserProfile(null)
+        setLoading(false)
+        return
+      }
+
       if (error && error.code === 'PGRST116') {
-        console.log('👤 User not found in database, creating profile...')
-        await createUserProfile(userId)
+        console.log('👤 User not found in database, continuing without profile...')
+        setUserProfile(null)
+        setLoading(false)
         return
       }
 
@@ -190,68 +206,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const createUserProfile = async (userId: string) => {
-    try {
-      console.log('👤 Creating user profile for userId:', userId)
-      
-      console.log('👤 Getting authenticated user data...')
-      const { data: authUser, error: userError } = await supabase.auth.getUser()
-      console.log('👤 Auth user data:', authUser)
-      console.log('👤 Auth user error:', userError)
-      
-      if (!authUser.user) {
-        console.error('❌ No authenticated user found')
-        setLoading(false)
-        return
-      }
-
-      const profileData = {
-        id: userId,
-        email: authUser.user.email!,
-        full_name: authUser.user.user_metadata?.full_name || null,
-        avatar_url: authUser.user.user_metadata?.avatar_url || null,
-        subscription_tier: 'free' as const,
-        locale: 'en' as const,
-        onboarding_completed: false,
-      }
-
-      console.log('👤 Profile data to insert:', profileData)
-      console.log('👤 Attempting to insert into users table...')
-
-      const startTime = Date.now()
-      const { data, error } = await supabase
-        .from('users')
-        .insert(profileData)
-        .select()
-        .single()
-      
-      const insertTime = Date.now() - startTime
-      console.log(`👤 Insert operation completed in ${insertTime}ms`)
-      console.log('👤 Insert result - data:', data)
-      console.log('👤 Insert result - error:', error)
-
-      if (error) {
-        console.error('❌ Profile creation error details:', {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code
-        })
-        console.log('👤 Continuing without profile due to creation error...')
-        setUserProfile(null)
-        setLoading(false)
-        return
-      }
-
-      console.log('👤 Setting created user profile:', data)
-      setUserProfile(data)
-      console.log('✅ Profile created successfully')
-      setLoading(false)
-    } catch (error) {
-      console.error('❌ Profile creation exception details:', error)
-      console.log('👤 Setting loading to false due to creation exception')
-      setUserProfile(null)
-      setLoading(false)
-    }
+    // Skip profile creation for now to avoid database issues
+    console.log('👤 Skipping profile creation - continuing without database profile')
+    setUserProfile(null)
+    setLoading(false)
   }
 
   const signIn = async (email: string, password: string) => {
@@ -305,34 +263,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('👋 Signing out...')
       console.log('👋 Current user before signout:', user?.email)
-      console.log('👋 Current session before signout:', !!session)
       
-      const { error } = await supabase.auth.signOut()
-      
-      if (error) {
-        console.error('❌ Sign out error details:', {
-          message: error.message,
-          name: error.name,
-          status: error.status
-        })
-        toast.error('Error signing out: ' + error.message)
-        throw error
-      }
-      
-      console.log('✅ Supabase signOut completed successfully')
-      
-      // Force clear local state immediately
-      console.log('🧹 Clearing local auth state...')
+      // Always clear local state first
+      console.log('🧹 Clearing local auth state immediately...')
       setUser(null)
       setSession(null)  
       setUserProfile(null)
       setLoading(false)
       
-      console.log('✅ Local state cleared')
+      // Then try Supabase signOut
+      console.log('👋 Calling Supabase signOut...')
+      const { error } = await supabase.auth.signOut()
+      
+      if (error) {
+        console.warn('⚠️ Supabase signOut error (but local state already cleared):', error.message)
+        // Don't throw error since local state is already cleared
+      } else {
+        console.log('✅ Supabase signOut completed successfully')
+      }
+      
+      console.log('✅ Sign out process completed')
       
     } catch (error) {
-      console.error('❌ Sign out exception details:', error)
-      throw error
+      console.warn('⚠️ Sign out exception (but local state cleared):', error)
+      // Don't throw error since local state is cleared
     }
   }
 

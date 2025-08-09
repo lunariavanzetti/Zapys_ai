@@ -16,6 +16,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 })
 
+// Configuration verified and ready for testing
+
 // Database types
 export interface Database {
   public: {

@@ -26,19 +26,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true
+    
+    // Safety timeout to prevent infinite loading
+    const safetyTimeout = setTimeout(() => {
+      if (mounted && loading) {
+        console.warn('⚠️ Auth initialization timeout - forcing loading to false')
+        setLoading(false)
+      }
+    }, 10000) // 10 second timeout
 
     // Initialize auth
     const initializeAuth = async () => {
       try {
         console.log('🔄 Initializing authentication...')
+        console.log('🔄 Environment check:', {
+          supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
+          hasAnonKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY
+        })
         
         // Get initial session
+        console.log('🔄 Getting initial session...')
+        const startTime = Date.now()
         const { data: { session }, error } = await supabase.auth.getSession()
+        const sessionTime = Date.now() - startTime
         
-        if (!mounted) return
+        console.log(`🔄 getSession completed in ${sessionTime}ms`)
+        console.log('🔄 Initial session result:', {
+          hasSession: !!session,
+          userId: session?.user?.id,
+          userEmail: session?.user?.email,
+          error: error?.message
+        })
+        
+        if (!mounted) {
+          console.log('🔄 Component unmounted during initialization')
+          return
+        }
 
         if (error) {
-          console.error('❌ Session error:', error)
+          console.error('❌ Session error details:', {
+            message: error.message,
+            name: error.name,
+            status: error.status
+          })
           setLoading(false)
           return
         }
@@ -49,84 +79,130 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null)
         
         if (session?.user) {
+          console.log('🔄 Initial session has user, fetching profile...')
           await fetchUserProfile(session.user.id)
+        } else {
+          console.log('🔄 No user in initial session, setting loading to false')
+          setLoading(false)
         }
-        
-        setLoading(false)
       } catch (error) {
-        console.error('❌ Auth initialization error:', error)
-        if (mounted) setLoading(false)
+        console.error('❌ Auth initialization exception:', error)
+        if (mounted) {
+          console.log('🔄 Setting loading to false due to initialization error')
+          setLoading(false)
+        }
       }
     }
 
     // Auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return
+      if (!mounted) {
+        console.log('🔄 Auth state change ignored - component unmounted')
+        return
+      }
 
       console.log('🔄 Auth state change:', event, session ? 'with session' : 'without session')
+      console.log('🔄 Session details:', {
+        hasSession: !!session,
+        userId: session?.user?.id,
+        userEmail: session?.user?.email,
+        userCreatedAt: session?.user?.created_at
+      })
       
       setSession(session)
       setUser(session?.user ?? null)
       
       if (session?.user) {
+        console.log('🔄 User found in session, fetching profile...')
         await fetchUserProfile(session.user.id)
         
         if (event === 'SIGNED_IN') {
           const isNewUser = new Date().getTime() - new Date(session.user.created_at).getTime() < 30000
+          console.log('🔄 New user check:', isNewUser)
           toast.success(isNewUser ? 'Welcome to Zapys AI!' : 'Welcome back!')
         }
       } else {
+        console.log('🔄 No user in session, clearing profile')
         setUserProfile(null)
+        setLoading(false)
         if (event === 'SIGNED_OUT') {
           toast.success('Signed out successfully')
         }
       }
-      
-      setLoading(false)
     })
 
     initializeAuth()
 
     return () => {
       mounted = false
+      clearTimeout(safetyTimeout)
       subscription.unsubscribe()
     }
   }, [])
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      console.log('👤 Fetching user profile...')
+      console.log('👤 Fetching user profile for userId:', userId)
+      console.log('👤 Supabase URL:', import.meta.env.VITE_SUPABASE_URL)
+      console.log('👤 Starting database query...')
       
+      const startTime = Date.now()
       const { data, error } = await supabase
         .from('users')
         .select('*')
         .eq('id', userId)
         .single()
+      
+      const queryTime = Date.now() - startTime
+      console.log(`👤 Database query completed in ${queryTime}ms`)
+      console.log('👤 Query result - data:', data)
+      console.log('👤 Query result - error:', error)
 
       if (error && error.code === 'PGRST116') {
-        // User doesn't exist, create profile
+        console.log('👤 User not found in database, creating profile...')
         await createUserProfile(userId)
         return
       }
 
       if (error) {
-        console.error('❌ Profile fetch error:', error)
+        console.error('❌ Profile fetch error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        })
+        console.log('👤 Continuing without profile due to error...')
+        setUserProfile(null)
+        setLoading(false)
         return
       }
 
+      console.log('👤 Setting user profile:', data)
       setUserProfile(data)
-      console.log('✅ Profile loaded')
+      console.log('✅ Profile loaded successfully')
+      setLoading(false)
     } catch (error) {
-      console.error('❌ Profile fetch exception:', error)
+      console.error('❌ Profile fetch exception details:', error)
+      console.log('👤 Setting loading to false due to exception')
+      setUserProfile(null)
+      setLoading(false)
     }
   }
 
   const createUserProfile = async (userId: string) => {
     try {
-      console.log('👤 Creating user profile...')
+      console.log('👤 Creating user profile for userId:', userId)
       
-      const { data: authUser } = await supabase.auth.getUser()
-      if (!authUser.user) throw new Error('No authenticated user')
+      console.log('👤 Getting authenticated user data...')
+      const { data: authUser, error: userError } = await supabase.auth.getUser()
+      console.log('👤 Auth user data:', authUser)
+      console.log('👤 Auth user error:', userError)
+      
+      if (!authUser.user) {
+        console.error('❌ No authenticated user found')
+        setLoading(false)
+        return
+      }
 
       const profileData = {
         id: userId,
@@ -138,21 +214,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         onboarding_completed: false,
       }
 
+      console.log('👤 Profile data to insert:', profileData)
+      console.log('👤 Attempting to insert into users table...')
+
+      const startTime = Date.now()
       const { data, error } = await supabase
         .from('users')
         .insert(profileData)
         .select()
         .single()
+      
+      const insertTime = Date.now() - startTime
+      console.log(`👤 Insert operation completed in ${insertTime}ms`)
+      console.log('👤 Insert result - data:', data)
+      console.log('👤 Insert result - error:', error)
 
       if (error) {
-        console.error('❌ Profile creation error:', error)
+        console.error('❌ Profile creation error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        })
+        console.log('👤 Continuing without profile due to creation error...')
+        setUserProfile(null)
+        setLoading(false)
         return
       }
 
+      console.log('👤 Setting created user profile:', data)
       setUserProfile(data)
-      console.log('✅ Profile created')
+      console.log('✅ Profile created successfully')
+      setLoading(false)
     } catch (error) {
-      console.error('❌ Profile creation exception:', error)
+      console.error('❌ Profile creation exception details:', error)
+      console.log('👤 Setting loading to false due to creation exception')
+      setUserProfile(null)
+      setLoading(false)
     }
   }
 
